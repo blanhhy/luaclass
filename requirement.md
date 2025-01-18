@@ -2,8 +2,9 @@
 
 This is a debit table that lists all the functions in this module that depend on other modules, so that the code can be maintained in time when other modules are updated.
 
+-------
 
-**基本函数扩展**
+# 基本函数扩展
 [GFuncEx](https://github.com/blanhhy/GFuncEx)
 ```lua
 Type  
