@@ -1,3 +1,7 @@
+local _M
+
+
+
 --定义或继承一个class
 function class(data, superclass)
   if Type(data) == "table" then
@@ -121,3 +125,18 @@ function printc(object)
   }
   Toast.makeText(activity, '', Toast.LENGTH_SHORT).setView(loadlayout(layout)).show()
 end
+
+
+
+_M = {
+  class,
+  super,
+  listClass,
+  printc,
+  creat = class,
+  callSuperMethod = super,
+  list = listClass,
+  print = printc
+}
+
+return _M
