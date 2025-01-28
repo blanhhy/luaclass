@@ -75,7 +75,7 @@ end
 
 
 --列出所有属性和方法
-function classList(object)
+function listattr(object)
   if type(object) == "class" then
     local propertis = "Property:\n"
     local methods = "Method:\n  __init__ ="..string.sub(tostring(object.__init__), 10)
@@ -99,5 +99,5 @@ end
 
 --打印一个class实例
 function printc(object)
-  print(classList(object))
+  print(listattr(object))
 end
