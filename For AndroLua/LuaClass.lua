@@ -75,7 +75,7 @@ end
 
 
 --列出所有属性和方法
-function classList(object)
+function listattr(object)
   if type(object) == "class" then
     local propertis = "Property:\n"
     local methods = "Method:\n  __init__ ="..string.sub(tostring(object.__init__), 10)
@@ -116,7 +116,7 @@ function printc(object)
       paddingLeft="4.4%w",
       paddingRight="4.4%w",
       gravity="left",
-      text=tostring(classList(object)),
+      text=tostring(listattr(object)),
     },
   }
   Toast.makeText(activity, '', Toast.LENGTH_SHORT).setView(loadlayout(layout)).show()
