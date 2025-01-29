@@ -5,7 +5,7 @@ This is a debit table that lists all the functions in this module that depend on
 -------
 
 # 基本函数扩展
-[GFuncEx](https://github.com/blanhhy/GFuncEx)
+[unifuncex](https://github.com/blanhhy/unifuncex)
 ```lua
 Type  
 type  
