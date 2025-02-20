@@ -4,13 +4,15 @@ This is a debit table that lists all the functions in this module that depend on
 
 -------
 
-# 基本函数扩展
+# 通用函数扩展
 [unifuncex](https://github.com/blanhhy/unifuncex)
 ```lua
-Type  
-type  
-table.copy  
-table.override  
-table.disband  
-table.detach  
+type
+table.override
+table.clone
+```
+# 集合
+[luaset](https://github.com/blanhhy/luaset)
+```lua
+_M.of
 ```
