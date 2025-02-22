@@ -7,9 +7,10 @@ local META_INDEX = "__index" -- __index元方法
 local META_TYPE = "__type" -- __type元方法
 local META_TO_STR = "__tostring" -- __tostring元方法
 local META_CALL = "__call" -- __call元方法
+local META_META = "__metatable" -- __metatable元方法
 local META_LIST = "__list" -- 预定义的__list方法
 local META_INIT = "__init" -- 实例初始化方法
-
+local NULL_TABLE = {} -- 一个空表
 
 
 -- 用来获取环境变量，同时返回其在局部变量中的位置
@@ -19,6 +20,7 @@ local function getfenv(level)
   local _, env =debug.getlocal(level, env_pos)
   return env, env_pos
 end
+
 
 
 -- class的默认实例化行为
@@ -33,6 +35,7 @@ local function instantiate(cls, ...)
 
   return obj
 end
+
 
 
 -- 在超类中查找属性和方法
@@ -62,7 +65,6 @@ end
 local _M = {
 
   [CLS_NAME] = M_CLS_NAME,
-
   [META_INIT] = function(self, name, data, base) -- luaclass也有__init元方法，该方法是创建class的最原始方式
     if data then
       table.override(self, data) -- 用data的索引覆盖self的索引
@@ -79,10 +81,12 @@ local _M = {
     rawset(self, META_TO_STR, rawget(luaclass, META_TO_STR))
     rawset(self, META_LIST, rawget(luaclass, META_LIST))
     rawset(self, CLS_NAME, rawget(self, CLS_NAME) or name)
+    rawset(self, META_META, NULL_TABLE)
   end,
 
   [META_CALL] = instantiate, -- luaclass也遵从默认实例化行为，直接调用luaclass能动态创建一个class
   [META_INDEX] = lookupall, -- __index元方法用于在超类或对象的类中查找属性或方法，但并不绑定任何的类
+  [META_META] = NULL_TABLE,
 
   [META_TYPE] = function (self) -- Androlua中或unifuncex模块中，type函数已被封装，支持__type元方法
     local class = rawget(self, CLS_OF_OBJ)
@@ -92,9 +96,11 @@ local _M = {
   [META_TO_STR] = function(self) -- 对象被转换为字符串将得到类名
     return "class " .. rawget(rawget(self, CLS_OF_OBJ), CLS_NAME)
   end,
+
   -- 列出所有的属性和方法名
   [META_LIST] = function(cls_or_obj)
     local set = luaset or require "luaset" -- 导入集合模块
+    if not set then error("Missing requirement 'luaset'.", 2) end --检查依赖
     local attr_set = set.of() -- 创建一个空的具体集合
 
 :: continue_in_superclass ::
@@ -147,28 +153,37 @@ end
 
 -- 可能发生的错误信息
 local ERR_NO_CLS = "Failed to find any class."
-local ERR_NO_ME_1 = "No \""
-local ERR_NO_ME_2 = "\" method existing in "
+local ERR_NO_ME_1 = "No attribute or method \""
+local ERR_NO_ME_2 = "\" existing in "
 local ERR_NO_ME_3 = "'s superclass."
 
 
 -- 构造一个专门用于拦截键的table
-local interceptor = setmetatable({}, {
+local interceptor = setmetatable(NULL_TABLE, {
   __index = function(self, name)
 
     local cls_or_obj = rawget(self, 1) -- 获取super函数传递的参数
     rawset(self, 1, nil) -- 销毁临时引用
-
+printt(cls_or_obj)
     local subclass = rawget(cls_or_obj, CLS_NAME) and cls_or_obj or rawget(cls_or_obj, CLS_OF_OBJ) -- 获取子类
-    local supermethod = lookupsuper(subclass, name) -- 向上追溯直到找到超类方法
+    local superitem = lookupsuper(subclass, name) -- 向上追溯直到找到超类属性或方法
 
     -- 如果查找不到，抛出一个错误
-    if not supermethod then
-      error(ERR_NO_ME_1 .. name .. ERR_NO_ME_2 .. rawget(superclass, CLS_NAME) .. ERR_NO_ME_3, 2)
+    if not superitem then
+      error(ERR_NO_ME_1 .. name .. ERR_NO_ME_2 .. rawget(subclass, CLS_NAME) .. ERR_NO_ME_3, 2)
     end
 
-    -- 返回一个从子类（或对象）的身份调用超类方法的闭包函数
-    return function(...) return supermethod(cls_or_obj, ...) end
+    -- 如果找到一个方法
+    if type(superitem) == "function" then
+      return function(other, ...) -- 返回一个可从子类（或对象）的身份调用超类方法的闭包函数
+        if other == interceptor then
+          return superitem(cls_or_obj, ...)
+        end
+        return superitem(other, ...)
+      end
+    end
+
+    return superitem -- 如果找到一个属性，直接返回
   end
 })
 

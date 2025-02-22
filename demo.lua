@@ -1,20 +1,22 @@
 -- 不同方式创建class演示
 class "my"
+a = 10
 function hh(self, t)
+  t = t or self.a
   print(self.__classname.."调用了超类方法"..t)
 end
 local my = class()
 
-local your = luaclass("your",{
-hh = function(self, t)
-  -- super().hh(t) 
-  -- 动态创建类时不能隐式调用super
-  print(self.__classname.."调用了子类方法"..t)
-end}, my)
+local your = luaclass("your", {
+  a = 20,
+  hh = function(self, t)
+    print(self.__classname.."调用了子类方法"..t)
+  end
+}, my)
 
 class "your2"
-hh = function(self, t)
-  super().hh(t) 
+function hh(self, t)
+  super():hh(t)
   print(self.__classname.."调用了子类方法"..t)
 end
 local your2 = class(my)
@@ -23,8 +25,8 @@ local your2 = class(my)
 printf(my:__list())
 -- >{ __classname, __type, __list, __tostring, __index, hh }
 
-super(your).hh(6)
--- >your调用了超类方法6
+super(your):hh()
+-- >your调用了超类方法20
 
 your2:hh(7)
 -- >your2调用了超类方法7
@@ -79,7 +81,7 @@ local www = myFirstClass(16)
 vvv:speak()
 -- >我是小明他爸，今年28岁
 
-super(vvv).speak() -- 调用超类的speak方法
+super(vvv):speak() -- 调用超类的speak方法
 -- >我叫小明，今年28岁
 
 uuu:speak()
