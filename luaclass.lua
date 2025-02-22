@@ -159,12 +159,13 @@ local ERR_NO_ME_3 = "'s superclass."
 
 
 -- 构造一个专门用于拦截键的table
-local interceptor = setmetatable(NULL_TABLE, {
+local interceptor = {}
+setmetatable(interceptor, {
   __index = function(self, name)
 
     local cls_or_obj = rawget(self, 1) -- 获取super函数传递的参数
     rawset(self, 1, nil) -- 销毁临时引用
-printt(cls_or_obj)
+    
     local subclass = rawget(cls_or_obj, CLS_NAME) and cls_or_obj or rawget(cls_or_obj, CLS_OF_OBJ) -- 获取子类
     local superitem = lookupsuper(subclass, name) -- 向上追溯直到找到超类属性或方法
 
