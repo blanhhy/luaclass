@@ -30,8 +30,8 @@ end
 class.end()
 
 
-printf(my:__list())
--- >{ __classname, __type, __list, __tostring, __index, hh }
+print(tostring(my:__list()))
+-- >{ __classname, __type, a, __list, __tostring, __index, hh, gg }
 
 super(your):hh()
 -- >your调用了超类方法20
