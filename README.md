@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Class Creation**: Create classes dynamically using the `class()` function.
+- **Class Creation**: Create classes directly using the `class()` function, or dynamically by calling the method itself.
 - **Inheritance**: Support for class inheritance, allowing classes to inherit methods and properties from base classes.
 - **Super Class Access**: Easily call superclass methods with the `super()` function.
 - **Custom Initialization**: Support for custom initialization methods (equivalent to `__init`) during object instantiation.
@@ -110,7 +110,7 @@ For further details and examples, please refer to the [demo](https://github.com/
 ### v1.0
 - Full rewrite with a new object-oriented class system.
 - Added `super` function for calling superclass methods.
-- Introduced dynamic class creation using `class()` syntax.
+- Introduced elegantly class creation using `class()` syntax.
 
 For a full list of changes, check the [changelog](https://github.com/blanhhy/luaclass/blob/main/changelog.md).
 
