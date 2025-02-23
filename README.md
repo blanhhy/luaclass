@@ -2,17 +2,16 @@
 
 # Luaclass
 
-**Luaclass** is a Lua library that introduces an object-oriented class system, making it easier to define and manage classes, inheritance, 和 instances in Lua. This module allows you to create classes, inherit from base classes, 和 manage class properties and methods with a flexible, dynamic approach.
+**Luaclass** is a Lua module designed to bring an object-oriented programming (OOP) approach to Lua by implementing class-based inheritance, method lookup, and other OOP features in a lightweight and intuitive way. This module allows you to create classes, inherit from base classes, and manage class properties and methods with a flexible, dynamic approach, all wrapped in a familiar syntax for developers who prefer object-oriented paradigms.
 
 ## Features
 
-- **Class Creation**: Create classes directly using the `class()` function, or dynamically by calling the method itself.
-- **Inheritance**: Support for class inheritance, allowing classes to inherit methods and properties from base classes.
+- **Class Creation**: Easily define classes using class() and manage inheritance hierarchies, or creat dynamically by calling the method itself.
+- **Inheritance and Overriding**: Support for class inheritance, allowing classes to inherit methods and properties from base classes or override them.
 - **Super Class Access**: Easily call superclass methods with the `super()` function.
-- **Custom Initialization**: Support for custom initialization methods (equivalent to `__init`) during object instantiation.
-- **Method Overriding**: Override base class methods in subclasses.
+- **Custom Initialization**: Support for custom initialization methods (by creating `__init` method) during object instantiation.
+- **Compatibility with Lua Metamethods**: Fully compatible with native Lua metamethods, including __index, __call, and __tostring.
 - **Cache-like `__list` Function**: List all properties and methods of a class, similar to Python's `__dict__`.
-- **Flexible Instantiation**: Objects can be instantiated using a simple constructor that dynamically binds the class methods.
 
 ## Requirements
 
@@ -108,7 +107,7 @@ For further details and examples, please refer to the [demo](https://github.com/
 - Fixed performance issues with `super()` function and improved caching.
 
 ### v1.3
-- Optimized performance by caching class and superclass properties internally.
+- Optimized performance.
 - Fixed minor bugs related to method lookup.
 
 ### v1.0
