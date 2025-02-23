@@ -19,7 +19,7 @@ Please check the full list of required dependencies [here](https://github.com/bl
 
 ## Installation
 
-You can install **Luaclass** by simply downloading the module main file ([luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/demo.lua)) and import it into your project
+You can install **Luaclass** by simply downloading the module main file ([luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/luaclass.lua)) and import it into your project
 
 If you are using Fusion App2 on Android, you can download the dedicated module version from the [github release](https://github.com/blanhhy/luaclass/releases) page.
 
