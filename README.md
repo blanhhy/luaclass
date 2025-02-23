@@ -1,6 +1,6 @@
-# Luaclass - A Lua Class System
+# Luaclass
 
-**Luaclass** is a Lua library that introduces an object-oriented class system, making it easier to define and manage classes, inheritance, and instances in Lua. This module allows you to create classes, inherit from base classes, and manage class properties and methods with a flexible, dynamic approach.
+**Luaclass** is a Lua library that introduces an object-oriented class system, making it easier to define and manage classes, inheritance, 和 instances in Lua. This module allows you to create classes, inherit from base classes, 和 manage class properties and methods with a flexible, dynamic approach.
 
 ## Features
 
