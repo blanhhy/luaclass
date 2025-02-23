@@ -1,12 +1,20 @@
--- 不同方式创建class演示
-class "my"
+-- 基本函数与语法演示
+local my = class "my" -- 定义一个局部类
 a = 10
 function hh(self, t)
   t = t or self.a
   print(self.__classname.."调用了超类方法"..t)
 end
-local my = class()
+function gg(self)
+  if _G[self.__classname] then
+    print("这是一个全局类！")
+   else
+    print("这是一个局部类！")
+  end
+end
+class.end() -- 结束创建类
 
+-- 动态地创建一个类
 local your = luaclass("your", {
   a = 20,
   hh = function(self, t)
@@ -14,12 +22,12 @@ local your = luaclass("your", {
   end
 }, my)
 
-class "your2"
+your2 = class("your2",my) --定义一个全局类
 function hh(self, t)
-  super():hh(t)
+  super():hh(t) -- 在类方法中调用超类方法时，无需传递任何参数
   print(self.__classname.."调用了子类方法"..t)
 end
-local your2 = class(my)
+class.end()
 
 
 printf(my:__list())
@@ -32,10 +40,16 @@ your2:hh(7)
 -- >your2调用了超类方法7
 -- >your2调用了子类方法7
 
+my:gg() -- >这是一个局部类！
+your2:gg() -- >这是一个全局类！
+
+
 -- -- -- --
 
+
 -- 多次继承与实例化演示
-class "myFirstClass"
+-- 定义myFirstClass
+local myFirstClass = class "myFirstClass"
 name = "李华"
 function __init(self, age)
   if age then
@@ -47,10 +61,10 @@ end
 function speak(self)
   print(self.name.."，"..self.age.."岁")
 end
-local myFirstClass = class()
--- 定义myFirstClass
+class.end()
 
-class "mySecondClass"
+-- 继承超类myFirstClass，并覆写name属性和speak方法
+local mySecondClass = class("mySecondClass", myFirstClass)
 name = "小明"
 function setRelationship(self)
   return "爸", 0
@@ -59,10 +73,10 @@ function speak(self)
   local relationship, agegap = self.setRelationship()
   print("我叫"..self.name.."，今年"..tostring(self.age+agegap).."岁")
 end
-local mySecondClass = class(myFirstClass)
--- 继承超类myFirstClass，并覆写name属性和speak方法
+class.end()
 
-class "myThirdClass"
+-- 继承超类mySecondClass，并覆写speak方法
+local myThirdClass = class("myThirdClass",mySecondClass)
 function setRelationship(self)
   return "爸", 20
 end
@@ -70,13 +84,12 @@ function speak(self)
   local relationship, agegap = self.setRelationship(self)
   print("我是"..self.name.."他"..relationship.."，今年"..tostring(self.age+agegap).."岁")
 end
-local myThirdClass = class(mySecondClass)
--- 继承超类mySecondClass，并覆写speak方法
+class.end()
 
+-- 创建一些实例
 local vvv = myThirdClass(8)
 local uuu = mySecondClass(8)
 local www = myFirstClass(16)
--- 创建一些实例
 
 vvv:speak()
 -- >我是小明他爸，今年28岁

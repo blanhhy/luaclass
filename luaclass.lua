@@ -125,30 +125,48 @@ setmetatable(_M, _M) -- luaclass自己也是luaclass的实例
 
 
 -- 面向用户创建一个class
-function class(name_or_base)
+local function classstart(self, name, base)
   local old_env, env_pos = getfenv(2) -- 获取外界的_ENV
 
-  -- 如果已经正在创建class，即第二次调用
-  if rawget(old_env, CLS_NAME) then
+  -- 生成创建class环境，并暂存原来的_ENV
+  local cls_env = setmetatable({ [CLS_NAME] = name }, { [META_INDEX] = old_env })
+  rawset(old_env, 1, old_env)
 
-    rawset(old_env, SUPER_CLS, name_or_base) -- 绑定指定的基本类（如果有）
+  rawset(cls_env, SUPER_CLS, base) -- 绑定指定的基本类（如果有）
 
-    -- 把原来的_ENV返还给外界
-    local original_env = rawget(getmetatable(old_env), META_INDEX)
-    debug.setlocal(2, env_pos, original_env)
+  debug.setlocal(2, env_pos, cls_env) -- 将外界环境设置为创建class环境
+  return cls_env
+end
 
-    -- 使创建的class成为luaclass的实例
-    local cls_ins = setmetatable(old_env, _M)
-    rawset(cls_ins, CLS_OF_OBJ, _M)
-    _M.__init(cls_ins)
 
-    return cls_ins -- class创建完毕
+-- 结束创建class环境
+local function classend()
+  local cls_env, env_pos = getfenv(2) -- 获取class
+
+  -- 把原来的_ENV返还给外界
+  local old_env = table.remove(cls_env, 1)
+  debug.setlocal(2, env_pos, old_env)
+
+  -- 如果创建class时没有用local修饰，则将变量保存在_ENV中
+  local cls_name = rawget(cls_env, CLS_NAME)
+  local cls_self = rawget(cls_env, cls_name)
+  if cls_self then
+    rawset(old_env, cls_name, cls_self)
+    rawset(cls_env, cls_name, nil)
   end
 
-  -- 如果没在创建class，即第一次调用
-  local env = setmetatable({ [CLS_NAME] = name_or_base }, { [META_INDEX] = old_env }) -- 生成创建class环境，并暂存原来的_ENV
-  debug.setlocal(2, env_pos, env) -- 将外界环境设置为创建class环境
+  -- 使创建的class成为luaclass的实例
+  setmetatable(cls_env, _M)
+  rawset(cls_env, CLS_OF_OBJ, _M)
+  _M.__init(cls_env)
 end
+
+
+class = setmetatable({
+  ["end"] = classend,
+},{
+  [META_CALL] = classstart,
+})
 
 
 -- 可能发生的错误信息
@@ -159,13 +177,13 @@ local ERR_NO_ME_3 = "'s superclass."
 
 
 -- 构造一个专门用于拦截键的table
-local interceptor = {}
+local interceptor = NULL_TABLE
 setmetatable(interceptor, {
   __index = function(self, name)
 
     local cls_or_obj = rawget(self, 1) -- 获取super函数传递的参数
     rawset(self, 1, nil) -- 销毁临时引用
-    
+
     local subclass = rawget(cls_or_obj, CLS_NAME) and cls_or_obj or rawget(cls_or_obj, CLS_OF_OBJ) -- 获取子类
     local superitem = lookupsuper(subclass, name) -- 向上追溯直到找到超类属性或方法
 
