@@ -21,7 +21,7 @@ Change to [Engnish](https://github.com/blanhhy/luaclass/blob/main/README_en.md)
 
 ## 安装
 
-只需要下载模块的主文件（[luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/demo.lua)）并将其导入到 Lua 项目中来安装 **Luaclass**。
+只需要下载模块的主文件（[luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/luaclass.lua)）并将其导入到 Lua 项目中来安装 **Luaclass**。
 
 如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
 
