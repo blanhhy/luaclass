@@ -1,40 +1,42 @@
-切换至 [中文](https://github.com/blanhhy/luaclass/blob/main/README_zh.md)
+Change to [Engnish](https://github.com/blanhhy/luaclass/blob/main/README_en.md)
 
 # Luaclass
 
-**Luaclass** is a Lua module designed to bring an object-oriented programming (OOP) approach to Lua by implementing class-based inheritance, method lookup, and other OOP features in a lightweight and intuitive way. This module allows you to create classes, inherit from base classes, and manage class properties and methods with a flexible, dynamic approach, all wrapped in a familiar syntax for developers who prefer object-oriented paradigms.
+**Luaclass** 是一个为 Lua 提供面向对象编程（OOP）支持的模块，旨在通过实现类继承、方法查找等 OOP 特性，轻量而直观地引入面向对象的编程范式。该模块允许创建类、继承基类，并灵活地管理类的属性和方法，所有功能都以一种开发者熟悉的语法进行封装。
 
-## Features
+## 特性
 
-- **Class Creation**: Easily define classes using class() and manage inheritance hierarchies, or creat dynamically by calling the method itself.
-- **Inheritance and Overriding**: Support for class inheritance, allowing classes to inherit methods and properties from base classes or override them.
-- **Super Class Access**: Easily call superclass methods with the `super()` function.
-- **Custom Initialization**: Support for custom initialization methods (by creating `__init` method) during object instantiation.
-- **Compatibility with Lua Metamethods**: Fully compatible with native Lua metamethods, including __index, __call, and __tostring.
-- **Cache-like `__list` Function**: List all properties and methods of a class, similar to Python's `__dict__`.
+- **类创建**：通过 `class()` 方法轻松定义类，并管理继承关系，也可以通过动态调用来创建类。
+- **继承与覆盖**：支持类继承，允许类从基类继承方法和属性，或重写它们。
+- **超类访问**：通过 `super()` 函数轻松调用超类方法。
+- **自定义初始化**：支持在实例化时通过创建 `__init` 方法进行自定义初始化。
+- **兼容 Lua 元方法**：完全兼容 Lua 原生的元方法，如 `__index`、`__call`、`__tostring` 等。
+- **类似缓存的 `__list` 功能**：列出类的所有属性和方法，类似于 Python 中的 `__dict__`。
 
-## Requirements
+## 依赖项
 
-Please check the full list of required dependencies [here](https://github.com/blanhhy/luaclass/blob/main/requirement.md).
+本模块依赖于我的另外两个模块。
 
-## Installation
+具体依赖的函数请点击 [这里](https://github.com/blanhhy/luaclass/blob/main/requirement.md) 来查看。
 
-You can install **Luaclass** by simply downloading the module main file ([luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/demo.lua)) and import it into your project
+## 安装
 
-If you are using Fusion App2 on Android, you can download the dedicated module version from the [github release](https://github.com/blanhhy/luaclass/releases) page.
+只需要下载模块的主文件（[luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/demo.lua)）并将其导入到 Lua 项目中来安装 **Luaclass**。
 
-To use the module in your Lua script, simply include it like this:
+如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
+
+在 Lua 脚本中使用该模块，只需像这样导入：
 
 ```lua
 local luaclass = require("luaclass")
 ```
 
-## Example
+## 示例
 
-Here is a basic usage example:
+以下是一个基础的使用示例：
 
 ```lua
--- Define a class "MyClass"
+-- 定义一个类 "MyClass"
 local my = class("MyClass")
 
 function hello(self)
@@ -43,17 +45,17 @@ end
 
 class.end()
 
--- Create an instance of "MyClass"
+-- 创建 "MyClass" 的实例
 local obj = my()
 
--- Call the method
+-- 调用方法
 obj:hello()
 ```
 
-or you can use this if you like:
+或者如果你喜欢的话，也可以这么写：
 
 ```lua
--- Define a class "MyClass"
+-- 定义一个类 "MyClass"
 local my = class("MyClass")
 
 function my:hello()
@@ -62,24 +64,24 @@ end
 
 class.end()
 
--- Create an instance of "MyClass"
+-- 创建 "MyClass" 的实例
 local obj = my()
 
--- Call the method
+-- 调用方法
 obj:hello()
 ```
 
-### Inheritance Example
+### 继承示例
 
 ```lua
--- Define a base class
+-- 定义一个基类
 local Animal = class("Animal")
 function speak(self)
   print(self.name .. " makes a sound.")
 end
 class.end()
 
--- Define a subclass
+-- 定义一个子类
 local Dog = class("Dog", Animal)
 function __init(self, name)
   self.name = name
@@ -89,40 +91,40 @@ function speak(self)
 end
 class.end()
 
--- Create an instance of the Dog class
+-- 创建 Dog 类的实例
 local dog = Dog("Buddy")
-dog:speak()  -- Output: Buddy barks.
+dog:speak()  -- 输出: Buddy barks.
 
--- Call a method from the super class
-super(dog):speak()  -- Output: Buddy makes a sound.
+-- 调用超类的方法
+super(dog):speak()  -- 输出: Buddy makes a sound.
 ```
 
-For further details and examples, please refer to the [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua).
+更多示例请参见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua)。
 
-## Changelog
+## 更新日志
 
 ### v1.4
-- Unified syntax for calling superclass methods (`super(cls_or_obj):method()`)
-- Improved class creation syntax: `local myclass = class("name")` or `local myclass = class("name", parent)`
-- Fixed performance issues with `super()` function and improved caching.
+- 统一了超类方法调用语法 (`super(cls_or_obj):method()`)
+- 改进了类创建语法：`local myclass = class("name")` 或 `local myclass = class("name", parent)`
+- 修复了 `super()` 函数的性能问题并改善了缓存机制。
 
 ### v1.3
-- Optimized performance.
-- Fixed minor bugs related to method lookup.
+- 优化了性能。
+- 修复了与方法查找相关的若干小问题。
 
 ### v1.0
-- Full rewrite with a new object-oriented class system.
-- Added `super` function for calling superclass methods.
-- Introduced elegantly class creation using `class()` syntax.
+- 全面重写了模块，采用了新的面向对象类系统。
+- 增加了 `super` 函数用于调用超类方法。
+- 引入了更优雅的类创建语法 `class()`。
 
-For a full list of changes, check the [changelog](https://github.com/blanhhy/luaclass/blob/main/changelog.md).
+详细更新请查阅 [更新日志](https://github.com/blanhhy/luaclass/blob/main/changelog.md)。
 
-## Upcoming Features
+## 即将到来的功能
 
-- **Multiple Inheritance**: New inheritance chain mechanism to support multiple inheritance.
-- **Lazy Instantiation**: Support for delayed instantiation of class instances.
-- **Advanced Caching**: Cache properties in a list-like structure (similar to Python’s `__dict__`).
+- **多重继承**：新的继承链机制以支持多重继承。
+- **延迟实例化**：支持延迟实例化类实例。
+- **高级缓存**：像 Python 的 `__dict__` 一样缓存类的属性。
 
-## Contribution
+## 贡献
 
-Feel free to fork this repository and submit pull requests. If you find any bugs or issues, open an issue in the repository.
+欢迎 Fork 本仓库并提交 Pull Request。如果你在使用时发现任何 bug 或问题，请在仓库中提交 issue 告诉我。
