@@ -78,7 +78,7 @@ local _M = {
     local luaclass = rawget(self, CLS_OF_OBJ)
     rawset(self, META_INDEX, lookupall)
     rawset(self, META_TYPE, rawget(luaclass, META_TYPE))
-    rawset(self, META_TO_STR, rawget(luaclass, META_TO_STR))
+    rawset(self, META_TO_STR, rawget(self, META_TO_STR) or rawget(luaclass, META_TO_STR))
     rawset(self, META_LIST, rawget(luaclass, META_LIST))
     rawset(self, CLS_NAME, rawget(self, CLS_NAME) or name)
     rawset(self, META_META, NULL_TABLE)
