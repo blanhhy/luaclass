@@ -102,3 +102,30 @@ uuu:speak()
 
 www:speak()
 -- >李华，16岁
+
+
+-- -- -- --
+
+
+-- 多重继承演示
+local A = class("A")
+function foo() print("A foo") end
+class.end()
+
+local B = class("B", A)
+function foo() print("B foo") end
+class.end()
+
+local C = class("C", A)
+function foo() print("C foo") end
+class.end()
+
+local D = class("D", B, C)
+function foo() print("D foo") end
+class.end()
+-- 或：local D = luaclass("D",{foo = function() print("D foo") end}, B, C)
+
+local d = D()
+d:foo()  -- 输出 "D foo"
+table.print(D.__mro) -- 输出 { B of class luaclass, C of class luaclass, A of class luaclass }
+super(d):foo()  -- 输出 "B foo"

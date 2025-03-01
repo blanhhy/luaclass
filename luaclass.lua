@@ -1,7 +1,9 @@
 -- 一些多次使用的常量
-local SUPER_CLS = "__superclass" -- 标记超类的键
-local CLS_OF_OBJ = "__class" -- 标记对象的类的键
-local CLS_NAME = "__classname" -- 标记类名的键
+local SUPER_CLS = "__superclass" -- 当前类的直接超类
+local MRO = "__mro" -- 方法解析顺序
+local CLS_FUNC = "class" -- class函数中的class
+local CLS_OF_OBJ = "__class" -- 对象的类
+local CLS_NAME = "__classname" -- 类名
 local M_CLS_NAME = "luaclass" -- 本模块的类名
 local META_INDEX = "__index" -- __index元方法
 local META_TYPE = "__type" -- __type元方法
@@ -11,6 +13,7 @@ local META_META = "__metatable" -- __metatable元方法
 local META_LIST = "__list" -- 预定义的__list方法
 local META_INIT = "__init" -- 实例初始化方法
 local NULL_TABLE = {} -- 一个空表
+local TABLE_LEN = "n" -- 储存table长度的域
 
 
 -- 用来获取环境变量，同时返回其在局部变量中的位置
@@ -30,7 +33,7 @@ local function instantiate(cls, ...)
   local init = cls[META_INIT]
 
   if type(init) == "function" then
-    init(obj, ...) -- 实例化时调用__init元方法（如果有）
+    return obj, init(obj, ...) -- 实例化时调用__init元方法（如果有）
   end
 
   return obj
@@ -38,20 +41,127 @@ end
 
 
 
--- 在超类中查找属性和方法
-local function lookupsuper(self, name)
-  local super = rawget(self, SUPER_CLS)
-  return super and super[name] -- 超类中不存在的，lua会自动在更上级的超类中查找
+-- 继承树线性化算法
+local function linearization(inherit_tree)
+  local branch_count = rawget(inherit_tree, TABLE_LEN) -- 获取分支数量
+  local inherit_chain = {} -- 结果继承链
+  local depth = 0 -- 合并分支后继承链的深度
+
+  -- 遍历树的每一个分支
+  for i = 1, branch_count do
+    local branch = rawget(inherit_tree, i)
+
+    -- 计算最的分支长度，作为合并后的深度
+    local n = rawget(branch, TABLE_LEN)
+    depth = n >= depth and n or depth
+
+    -- 遍历当前分支的每一个超类层级
+    for level, cur_supers in ipairs(branch) do
+
+      local merged_cur_supers = rawget(inherit_chain, level) -- 在以后的分支中，直接从结果继承链中取出同层级的超类组
+      or (function()
+        local tmp = { [TABLE_LEN] = 0 } -- 当前为第一条分支，新建一个空的超类组，标记超类数量为0
+        rawset(inherit_chain, level, tmp) -- 加到结果继承链的同层级区域中
+        return tmp
+      end)()
+
+      local merged_cur_supers_count = rawget(merged_cur_supers, TABLE_LEN) -- 获取目前已经完成合并的超类数量
+
+      local add_count = 0
+      for _, cur_super in ipairs(cur_supers) do
+        if not rawget(merged_cur_supers, cur_super) then
+          table.insert(merged_cur_supers, cur_super)
+          rawset(merged_cur_supers, cur_super, true)
+          add_count = add_count + 1 -- 计算实际被合并的超类数量
+        end
+      end
+
+      rawset(merged_cur_supers, TABLE_LEN, merged_cur_supers_count + add_count) -- 更新已经完成合并的超类数量
+    end
+  end
+
+  rawset(inherit_chain, TABLE_LEN, depth) -- 设置结果继承链深度
+  return inherit_chain
 end
 
 
 
+-- 创建类时计算继承链
+function compute_inherit_chain(cls, ...)
+local branch_count = select("#", ...)
+  if branch_count ~= 0 then
+    local inherit_tree = { [TABLE_LEN] = branch_count } -- 有多少个直接超类，就有多少个分支
+    for i = 1, branch_count do
+      local cur_direct_super = select(i, ...) -- 获取...中的第i个超类
+      local cur_upper_inherit_chain = table.override({}, rawget(cur_direct_super, SUPER_CLS) or { [TABLE_LEN] = 0 })
+      table.insert(cur_upper_inherit_chain, 1, { cur_direct_super , [TABLE_LEN] = 1 })
+      rawset(cur_upper_inherit_chain,TABLE_LEN, rawget(cur_upper_inherit_chain, TABLE_LEN) + 1)
+      rawset(inherit_tree, i, cur_upper_inherit_chain)
+    end
+    rawset(cls, SUPER_CLS, linearization(inherit_tree))
+  end
+end
+
+
+-- 计算MRO
+local function compute_mro(cls)
+  local mro = rawget(cls, "__mro")
+
+  -- 如果已经计算过MRO，直接返回
+  if mro then
+    return mro
+  end
+
+  mro = {}
+
+  -- 获取继承链
+  local inherit_chain = rawget(cls, SUPER_CLS)
+  if not inherit_chain then
+    rawset(cls, MRO, mro)
+    return mro -- 如果没有继承链，直接输出空的MRO
+  end
+
+  local seen = {} -- 记录已经出现过的超类
+  local depth = rawget(inherit_chain, TABLE_LEN)
+
+  -- 由深至浅地遍历超类组，确保出现在多个层级中的超类只计最深的位置
+  for i = depth, 1, -1 do
+    local cur_supers = rawget(inherit_chain, i)
+    local cur_supers_count = rawget(cur_supers, TABLE_LEN)
+    -- 从后往前遍历同层超类，确保下级声明顺序靠后的超类的超类后被考虑
+    for j = cur_supers_count, 1, -1 do
+      local cur_super = rawget(cur_supers, j)
+
+      if not rawget(seen, cur_super) then
+        table.insert(mro, 1, cur_super)
+        rawset(seen, cur_super, true)
+      end
+    end
+  end
+  rawset(cls, MRO, mro)
+
+  return mro
+end
+
+-- 依据MRO查找属性和方法
+local function lookupsuper(self, name)
+  local mro = compute_mro(self) -- 获取类的MRO
+  for _, class in ipairs(mro) do
+    local item = rawget(class, name)
+    if item then
+      return item
+    end
+  end
+  return nil
+end
+
+
 -- 在超类或对象的类中查找属性和方法
 local function lookupall(self, name)
-  local superattr = lookupsuper(self, name) -- 先尝试从超类中查找
+  local superitem = lookupsuper(self, name) -- 先尝试从超类中查找
 
-  if superattr then
-    return superattr
+  if superitem then
+    return superitem
   end
 
   -- 如果没有则尝试从对象的类中查找
@@ -65,14 +175,15 @@ end
 local _M = {
 
   [CLS_NAME] = M_CLS_NAME,
-  [META_INIT] = function(self, name, data, base) -- luaclass也有__init元方法，该方法是创建class的最原始方式
+  [META_INIT] = function(self, name, data, ...) -- luaclass也有__init元方法，该方法是创建class的最原始方式
     if data then
       table.override(self, data) -- 用data的索引覆盖self的索引
     end
 
-    if base then
-      rawset(self, SUPER_CLS, base) -- 绑定指定的基本类（如果有）
-    end
+    -- 储存继承链（如果有）
+    compute_inherit_chain(self, ...)
+
+    compute_mro(self) -- 储存MRO
 
     -- 传递一些基本的元方法，这样需要访问时就不用在luaclass中查找了
     local luaclass = rawget(self, CLS_OF_OBJ)
@@ -94,7 +205,7 @@ local _M = {
   end,
 
   [META_TO_STR] = function(self) -- 对象被转换为字符串将得到类名
-    return "class " .. rawget(rawget(self, CLS_OF_OBJ), CLS_NAME)
+    return (rawget(self, CLS_NAME) or "instance") .. " of class " .. rawget(rawget(self, CLS_OF_OBJ), CLS_NAME)
   end,
 
   -- 列出所有的属性和方法名
@@ -125,14 +236,17 @@ setmetatable(_M, _M) -- luaclass自己也是luaclass的实例
 
 
 -- 面向用户创建一个class
-local function classstart(self, name, base)
+local function classstart(self, name, ...)
   local old_env, env_pos = getfenv(2) -- 获取外界的_ENV
 
   -- 生成创建class环境，并暂存原来的_ENV
   local cls_env = setmetatable({ [CLS_NAME] = name }, { [META_INDEX] = old_env })
   rawset(old_env, 1, old_env)
 
-  rawset(cls_env, SUPER_CLS, base) -- 绑定指定的基本类（如果有）
+  -- 储存继承链（如果有）
+  compute_inherit_chain(cls_env, ...)
+
+  compute_mro(cls_env) -- 储存MRO
 
   debug.setlocal(2, env_pos, cls_env) -- 将外界环境设置为创建class环境
   return cls_env
@@ -162,13 +276,6 @@ local function classend()
 end
 
 
-class = setmetatable({
-  ["end"] = classend,
-},{
-  [META_CALL] = classstart,
-})
-
-
 -- 可能发生的错误信息
 local ERR_NO_CLS = "Failed to find any class."
 local ERR_NO_ME_1 = "No attribute or method \""
@@ -177,8 +284,8 @@ local ERR_NO_ME_3 = "'s superclass."
 
 
 -- 构造一个专门用于拦截键的table
-local interceptor = NULL_TABLE
-setmetatable(interceptor, {
+local callsupercache = {}
+local interceptor = setmetatable(callsupercache, {
   __index = function(self, name)
 
     local cls_or_obj = rawget(self, 1) -- 获取super函数传递的参数
@@ -208,7 +315,7 @@ setmetatable(interceptor, {
 
 
 -- 调用超类的属性或方法
-function super(cls_or_obj)
+local function callsuper(cls_or_obj)
   if not cls_or_obj then
     local _, self = debug.getlocal(2, 1) -- 如果没有传入类或者对象，则尝试从类方法中获取self（可能不是这个名字，但一定是第一个参数）
     cls_or_obj = self or error(ERR_NO_CLS, 2) -- 如果没有self，抛出一个错误
@@ -218,6 +325,17 @@ function super(cls_or_obj)
 
   return interceptor -- 返回拦截器
 end
+
+
+-- 导出两个全局函数
+class = setmetatable({
+  ["end"] = classend,
+},{
+  [META_CALL] = classstart,
+})
+
+
+super = callsuper
 
 
 return _M
