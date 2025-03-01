@@ -124,7 +124,7 @@ super(dog):speak()  -- 输出: Buddy makes a sound.
 - **多重继承**：新的继承链机制以支持多重继承。
 - **延迟实例化**：支持延迟实例化类实例。
 - **高级缓存**：像 Python 的 `__dict__` 一样缓存类的属性。
-- **class文件**：支持从lua文件中导入class。
+- **class 文件**：支持从lua文件中导入class。
 
 ## 贡献
 
