@@ -29,7 +29,7 @@
 require "luaclass"
 ```
 
-需要注意的是，这里导入的luaclass是一个类，而模块真正导出的可用函数是 `class` ,  `super` 和 `isinstance` 。
+需要注意的是，这里导入的 `luaclass` 是一个类，而模块真正导出的可用函数是 `class` ,  `super` 和 `isinstance` 。
 
 ## 演示
 
