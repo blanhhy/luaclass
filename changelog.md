@@ -14,23 +14,23 @@
 https://github.com/blanhhy/luaclass/compare/v1.4...v1.6
 
 >大更新
-1. 关于 compute_mro 函数
+>1. 关于 compute_mro 函数
 >
 >　新增 MRO 机制以支持多继承，现在类的 __superclass 属性是一个包含所有直接超类的序列，而 MRO 会存储在 __mro 属性中
 >
-　新增 compute_mro 函数用于计算 MRO 
+>　新增 compute_mro 函数用于计算 MRO 
 >
 >　由于 Python 的C3线性化算法在 Lua 中难以实现，即使硬要实现也会因为过多的遍历严重影响性能，因此最终采用了“分块线性化”算法，损耗较少的性能就能得到和C3大差不差的结果（由于C3是深度优先，所有有时还是会有一点差异）
 >
-　分块线性化算法：广度优先，先来后到，维持单调性。发生单调性冲突时，会拒绝创建类并提供冲突的具体位置
+>　分块线性化算法：广度优先，先来后到，维持单调性。发生单调性冲突时，会拒绝创建类并提供冲突的具体位置
 >
 >　现在 lookup 函数会按照 MRO 查找属性和方法
 >
-2. 关于 class_creater 函数
+>2. 关于 class_creater 函数
 >
 >　再次更新了语法，新的语法有一点像 C++ ，现在创建类的语法类似 class "类名" {成员表} 或 class.类名 {成员表}
 >
-　新增了 class_creater 函数，原来的 classstart 和 classend 被移除
+>　新增了 class_creater 函数，原来的 classstart 和 classend 被移除
 >
 >　统一了类的创建方式，即所有类创建都依靠 luaclass 的实例化，现在的 class_creater 只是对 luaclass 的 __init 方法的封装，导出的 class 对象只是 class_creater 的语法糖
 >
@@ -58,7 +58,7 @@ https://github.com/blanhhy/luaclass/compare/v1.4...v1.6
 
 
 
-v1.4
+### v1.4
 **Changelog**:
 * 统一了子类和超类方法的调用语法（类似于`super(cls_or_obj):method()` ）
 * 优化了创建类的语法，现在开始创建类的语句类似于`local myclass = class "name"` 或`local myclass = class("name", parent)` ，结束语句统一为`class.end() `
@@ -70,12 +70,12 @@ v1.4
 **Full Changelog**:https://github.com/blanhhy/luaclass/compare/v1.3...v1.4
 
 >改进了语法
-1. 将super函数的调用语法调整至和普通的table（以及其他的类或者对象）一致，贴合lua原生的使用体验
-2. 调整了class函数的逻辑，将赋值、命名、绑定超类的操作全部放在创建类的开头，创建结束后只需写下class.end()，更加符合人类直觉
+>1. 将super函数的调用语法调整至和普通的table（以及其他的类或者对象）一致，贴合lua原生的使用体验
+>2. 调整了class函数的逻辑，将赋值、命名、绑定超类的操作全部放在创建类的开头，创建结束后只需写下class.end()，更加符合人类直觉
 
 
 
-v1.3
+### v1.3
 **Changelog**:
 
 * 改进了性能
@@ -87,13 +87,13 @@ v1.3
 **Full Changelog**: https://github.com/blanhhy/luaclass/compare/v1.0...v1.3
 
 >主要的改动包括：
-1. 现在对象的类会保存在对象内部的__class属性中，这样查找类或超类的属性和方法就无需访获取元表了
-2. 将super函数中的拦截器table独立出来，而后续使用则依靠super函数向拦截器中添加参数，从而不再需要每次创建新的拦截器
-3. 把一些反复使用的字符串加到了局部变量当中以提升访问性能
+>1. 现在对象的类会保存在对象内部的__class属性中，这样查找类或超类的属性和方法就无需访获取元表了
+>2. 将super函数中的拦截器table独立出来，而后续使用则依靠super函数向拦截器中添加参数，从而不再需要每次创建新的拦截器
+>3. 把一些反复使用的字符串加到了局部变量当中以提升访问性能
 
 
 
-v1.0
+### v1.0
 **Changelog**:
 * 采用全新的实现方式，彻底重写了整个模块
 * 兼容Lua原生的元方法
