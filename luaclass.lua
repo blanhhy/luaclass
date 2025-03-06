@@ -8,6 +8,7 @@ local META_TYPE = "__type" -- __type元方法
 local META_TO_STR = "__tostring" -- __tostring元方法
 local META_CALL = "__call" -- __call元方法
 local META_META = "__metatable" -- __metatable元方法
+local META_MODE = "__mode" -- 表的引用模式
 -- local META_LIST = "__list" -- 预定义的__list方法（暂时废弃，待以后写出缓存机制会重新加入）
 local META_INIT = "__init" -- 实例初始化方法
 local NULL_TABLE = {} -- 一个空表
@@ -44,8 +45,8 @@ local function compute_mro(cls)
   local mros = {} -- 继承树平铺场地
   local branch_lens = {} -- 每一个分支的长度
   local mro_lvs = {} -- 每一个分支中的分块信息
-  local peak_level = 1 -- 层顶位置，即层级最多的分支的层级数
   local progresses = {} -- 分支处理进度，兼去重表
+  local peak_level = 1 -- 层顶位置，即层级最多的分支的层级数
   local order = 0 -- 维持单调性原则
 
   -- ①首先将继承树平铺，按分支与超类层级分为若干个小块
@@ -234,8 +235,8 @@ setmetatable(_M, _M) -- luaclass自己也是luaclass的实例
 -- 构造一个用于拦截方法调用以及缓存super调用结果的table
 local callsupercache = {}
 local interceptor = setmetatable(callsupercache, {
-  __mode = "k", -- 弱引用键模式，以便对象销毁时自动清除缓存
-  __index = function(self, name)
+  [META_MODE] = "k", -- 弱引用键模式，以便对象销毁时自动清除缓存
+  [META_INDEX] = function(self, name)
 
     local cls_or_obj = rawget(self, 1) -- 获取super函数传递的参数
     rawset(self, 1, nil) -- 销毁临时引用
@@ -289,6 +290,10 @@ end
 
 
 
+local _C = { luaclass = _M } -- 以类名为索引，记录所有已知的类
+
+
+
 -- 类创建器，但并不处理类创建逻辑，只是对luaclass的简单封装
 local function class_creater(self, classname)
   return function(...)
@@ -299,6 +304,7 @@ local function class_creater(self, classname)
       data = setmetatable(data, _M) -- 使类成为luaclass的实例
       rawset(data, CLS_OF_OBJ, _M)
       local cls = luaclass(data, classname) -- 调用luaclass实例化方法初始化类
+      rawset(_C, classname, cls)
       _ENV[classname] = cls -- 创建的类自动绑定和类名相同的环境变量名
       return cls -- 返回这个类，用户可以创建别名
     end
@@ -309,6 +315,7 @@ local function class_creater(self, classname)
       data = setmetatable(data or {}, _M)
       rawset(data, CLS_OF_OBJ, _M)
       local cls = luaclass(data, classname, nil, superclasses)
+      rawset(_C, classname, cls)
       _ENV[classname] = cls
       return cls
     end
@@ -317,7 +324,8 @@ end
 
 
 -- 导出三个全局函数
-class = setmetatable(NULL_TABLE, {
+class = setmetatable(_C, {
+  [META_MODE] = "v",
   [META_INDEX] = class_creater,
   [META_CALL] = class_creater,
 })
