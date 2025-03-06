@@ -8,11 +8,7 @@ This is a debit table that lists all the functions in this module that depend on
 [unifuncex](https://github.com/blanhhy/unifuncex)
 ```lua
 type
+rawtype
 table.override
-table.clone
-```
-# 集合
-[luaset](https://github.com/blanhhy/luaset)
-```lua
-_M.of
+table.tostring
 ```
