@@ -34,7 +34,7 @@ https://github.com/blanhhy/luaclass/compare/v1.4...v1.6
 >
 >　统一了类的创建方式，即所有类创建都依靠 luaclass 的实例化，现在的 class_creater 只是对 luaclass 的 __init 方法的封装，导出的 class 对象只是 class_creater 的语法糖
 >
->　现在 class_creater 会自动绑定同类名的环境变量名，创建语法更为简洁，但副作用就是可能导致变量名冲突，不过在大多数情况下没问题，即使发生了也可以手动创建一个局部引用（local myclass class "myclass" {}），然后删除全局引用（_ENV.myclass = nil）
+>　现在 class_creater 会自动绑定同类名的环境变量名，创建语法更为简洁，但副作用就是可能导致变量名冲突，不过在大多数情况下没问题，即使发生了也可以手动创建一个局部引用（local myclass = class "myclass" {}），然后删除全局引用（_ENV.myclass = nil）
 >
 >　新的创建流程直接获取类的原表，不再需要原来依赖debug库的切换环境操作，提高了性能
 >
