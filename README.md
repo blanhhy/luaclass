@@ -56,7 +56,7 @@ obj:greet() --> Hello from MyClass
 
 ```lua
 class.MyClass {
-  hello = function(self)
+  greet = function(self)
     print("Hello from " .. type(self));
   end;
 }
