@@ -1,5 +1,3 @@
-Change to [Engnish](https://github.com/blanhhy/luaclass/blob/main/README_en.md)
-
 # Luaclass
 
 **Luaclass** 是一个为 Lua 提供面向对象编程（OOP）支持的模块，轻量但功能强大，支持多继承、方法解析顺序（MRO）计算、动态类创建、超类方法调用缓存等特性。该模块提供了一种直观的方式来定义类、继承基类，并灵活管理类的属性和方法，使 Lua 的面向对象编程更加优雅。
