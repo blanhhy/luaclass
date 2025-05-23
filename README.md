@@ -13,7 +13,7 @@
 
 ## 依赖项
 
-本模块依赖于 [unifuncex](https://github.com/blanhhy/unifuncex) 模块。
+本模块依赖于 [packagex](https://github.com/blanhhy/packagex) 和 [tablex](https://github.com/blanhhy/tablex) 模块。
 
 具体依赖的函数请点击 [这里](https://github.com/blanhhy/luaclass/blob/main/requirement.md) 来查看。
 
