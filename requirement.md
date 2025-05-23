@@ -4,11 +4,14 @@ This is a debit table that lists all the functions in this module that depend on
 
 -------
 
-# 通用函数扩展
-[unifuncex](https://github.com/blanhhy/unifuncex)
+### 通用函数扩展
+[packagex](https://github.com/blanhhy/packagex)
 ```lua
-type
 rawtype
+```
+### Table Extension
+[tablex](https://github.com/blanhhy/tablex)
+```lua
 table.override
 table.tostring
 ```
