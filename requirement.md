@@ -12,6 +12,6 @@ rawtype
 ### Table Extension
 [tablex](https://github.com/blanhhy/tablex)
 ```lua
-table.override
-table.tostring
+tablex.override
+tablex.tostring
 ```
