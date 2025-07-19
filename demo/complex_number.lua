@@ -7,7 +7,7 @@ class "Complex" {
     self.imag = imag
   end;
 
-  -- 操作符重载
+  -- 运算符重载
   __add = function(a, b)
     local num_type = luaclass(b)
     if num_type == Complex then
@@ -16,21 +16,20 @@ class "Complex" {
       return Complex(a.real + b, a.imag) -- 复数加实数
     end
   end;
+  
   __sub = function(a, b)
-    local num_type = luaclass(b)
-    if num_type == Complex then
-      return Complex(a.real - b.real, a.imag - b.imag)
-     elseif num_type == "number" then
-      return Complex(a.real - b, a.imag)
-    end
+    local opst = -b
+    return a + opst
   end;
+  
   __unm = function(self)
-    return Complex(- a.real, - a.imag)
+    return Complex(-a.real, -a.imag)
   end;
+  
   __mul = function(a, b)
     local num_type = luaclass(b)
     if num_type == Complex then
-      return Complex(a.real * b.real - a.imag * b.imag, a.real * b.imag + a.imag * b.real)
+      return Complex(a.real*b.real - a.imag*b.imag, a.real*b.imag + a.imag*b.real)
      elseif num_type == "number" then
       return Complex(a.real * b, a.imag * b)
     end
@@ -42,7 +41,7 @@ class "Complex" {
     if imag > 0 then
       return ("%d + %di"):format(self.real, imag)
      elseif imag < 0 then
-      return ("%d - %di"):format(self.real, - imag)
+      return ("%d - %di"):format(self.real, -imag)
      else
       return tostring(self.real)
     end
@@ -53,4 +52,4 @@ local z1 = Complex(1, 2)
 local z2 = Complex(3, 4)
 
 print(z1 + z2) --> 4 + 6i
-print(z1 * z2) --> -5 + 10i
+print(z1*z2) --> -5 + 10i

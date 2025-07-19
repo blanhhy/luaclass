@@ -1,11 +1,9 @@
-local _G = _G
-local rawget = _G.rawget
-local rawset = _G.rawset
-local type = _G.type
-local next = _G.next
-local getmetatable = _G.getmetatable
-local setmetatable = _G.setmetatable
+local _G, type, next, rawget, rawset, setmetatable = _G, type, next, rawget, rawset, setmetatable
 
+local _ENV = {}
+if _G.tonumber(_G._VERSION:sub(5, -1)) < 5.2 then
+  _G.setfenv(1, _ENV) -- 旧版环境机制兼容
+end
 
 
 -- 注册表：以命名空间+类名为索引，记录所有已知的类
@@ -18,6 +16,23 @@ local _Registry = setmetatable({}, {
     return cache
   end
 })
+
+-- 模块本身也是一个类，所有类都是luaclass的实例
+local luaclass = _ENV
+
+luaclass.__classname = "luaclass";
+luaclass._Registry = _Registry;
+function luaclass:__tostring()
+  return self.__classname
+end
+
+-- luaclass自己也是自己的实例
+luaclass.__class = luaclass
+setmetatable(luaclass, luaclass)
+
+_Registry[_G].luaclass = luaclass
+luaclass.__mro = {luaclass, n = 1, lv = {1, n = 1}}
+
 
 
 -- 计算MRO
@@ -100,7 +115,7 @@ local function compute_mro(cls, bases)
            else
             -- 如果后检测到重复的超类比前面重复的超类出现位置更早，表明本次继承违反了单调性原则
             order = seen_pos >= order and seen_pos or _G.error((function()
-              local clsname = rawget(cls, "__classname") or "<UnnamedClass>" -- 当前类名
+              local clsname = cls.__classname or "<UnnamedClass>" -- 当前类名
               local mro_path = (function()
                 local str_list = {}
                 for i = 1, #mro do
@@ -108,20 +123,20 @@ local function compute_mro(cls, bases)
                 end
                 return _G.table.concat(str_list, " -> ")
               end)() -- MRO 路径
-              local seen_cls_name = rawget(mro[order], "__classname") or "<UnnamedClass>" -- 已知的类名
-              local conflict_cls_name = rawget(Ptr_cls, "__classname") or "<UnnamedClass>" -- 冲突的类名
-              local branch_name = rawget(bases[Ptr_branch], "__classname") -- 当前分支类名
+              local seen_cls_name = mro[order].__classname or "<UnnamedClass>" -- 已知的类名
+              local conflict_cls_name = Ptr_cls.__classname or "<UnnamedClass>" -- 冲突的类名
+              local branch_name = bases[Ptr_branch].__classname -- 当前分支类名
               return
               ("Cannot create class '%s' due to MRO conflict. (in bases: %s, %s)\nProcessing traceback: %s ... %s@%d -> %s@%d (in branch '%s', level #%s)")
               :format(clsname, seen_cls_name, conflict_cls_name, mro_path, seen_cls_name, order, conflict_cls_name, seen_pos, branch_name, Ptr_level)
             end)(), 4) -- 拒绝创建类，并抛出错误提示无法创建的类和发生冲突的类
           end
         end
-        rawset(progresses, Ptr_branch, progress_updated) -- 更新处理进度
+        progresses[Ptr_branch] = progress_updated -- 更新处理进度
       end
     end
 
-    rawset(mro_lv, Ptr_level + 1, merged_in_level) -- 缓存顺便收集的结果MRO分块信息，以便于下一次合并
+    mro_lv[Ptr_level + 1] = merged_in_level -- 缓存顺便收集的结果MRO分块信息，以便于下一次合并
   end
 
   mro_lv.n = peak_level + 1 -- 每继承一次，继承链多一层
@@ -135,30 +150,21 @@ end
 
 
 -- 依据MRO查找属性和方法
-local function lookup(self, name, start)
-  local mro = compute_mro(self)
-  for i = start, mro.n do
+local function lookup(self, name)
+  local mro = self.__mro
+  for i = 2, mro.n do
     local item = rawget(mro[i], name)
     if item then return item end
   end
 end
 
+luaclass.__index = lookup
 
--- 从超类或对象的类中查找属性和方法
-local function index_lookup(self, name)
-  if rawget(self, "__classname") then
-    return lookup(self, name, 2)
-  end
-  local cls = rawget(self, "__class")
-  return cls and lookup(cls, name, 1)
+
+-- 一般对象字符串化（默认行为）
+local function obj2str(self)
+  return ("<%s object>"):format(self.__class.__classname)
 end
-
-
--- 类和对象默认的字符串化行为
-local function str(self)
-  return rawget(self, "__classname") or ("<%s object>"):format(rawget(self.__class, "__classname"))
-end
-
 
 -- 创建一般对象（默认行为）
 local function object(cls)
@@ -166,36 +172,27 @@ local function object(cls)
 end
 
 
--- 所有类（包括元类）的默认实例化流程
-local function instantiate(cls, ...)
-  local obj = cls:__new(...) -- 调用 __new 方法创建对象
 
-  -- 然后调用 __init 方法（如果有）初始化
-  local init = cls.__init
-  if init then init(obj, ...) end
-
-  return obj -- 返回实例对象
-end
-
+local mm_name = {
+  "__add", "__sub", "__mul", "__div", "__idiv", "__mod", "__pow",
+  "__unm", "__band", "__bor", "__bxor", "__bnot", "__shl", "__shr",
+  "__concat", "__len", "__eq", "__lt", "__le", "__call", "__gc"
+}
 
 -- 创建一个类
-local function luaclass(mcls, name, bases, rtb)
+function luaclass.__new(mcls, name, bases, rtb)
   if not (bases or rtb) then -- 单参数调用时，返回对象的类
     local t = type(name)
-    if t == "table" then
-      return name.__class or t
-    end
-    return t
+    return t == "table" and name.__class or t
   end
 
   local cls = {
     __classname = name,
     __class = mcls,
     __new = object,
-    __index = index_lookup,
-    __call = instantiate,
-    __tostring = str,
+    __tostring = obj2str,
   }
+  cls.__index = cls
 
   if rtb then
     _Registry[rtb.env or _G][name] = cls
@@ -207,46 +204,47 @@ local function luaclass(mcls, name, bases, rtb)
 
   setmetatable(cls, mcls) -- 绑定元类
   compute_mro(cls, bases) -- 计算MRO
+  
+  -- 由于 Lua 不从 __index 中查找元方法所以只好复制
+  for i = 1, 21 do
+    local name = mm_name[i]
+    local mm = cls[name]
+    if not rawget(cls, name) and mm then
+      cls[name] = mm
+    end
+  end
   return cls
 end
 
 
-
--- luaclass模块本身也是一个class，所有类都是luaclass的实例
-local _M = {
-  __classname = "luaclass",
-  __new = luaclass,
-  __call = instantiate,
-  __index = index_lookup,
-  __tostring = str,
-  _Registry = _Registry,
-}
-_M.__class = _M
-_M__mro = { _M, n = 1, lv = { 1, n = 1 }}
-setmetatable(_M, _M) -- luaclass自己也是自己的实例
-_Registry[_G].luaclass = _M
-
+-- 实例化流程
+function luaclass.__call(cls, ...)
+  local inst = cls:__new(...)
+  local init = cls.__init
+  if init then init(inst, ...) end
+  return inst
+end
 
 
 
 -- 拦截并重定向成员访问
 local interceptor = {
   __index = function(cache, k)
-    local sub = cache[2] -- 访问者代表的子类
-    local item = lookup(sub, k, 2) -- 寻找超类成员
+    local cls = cache[2] -- 访问者代表的子类
+    local spueritem = lookup(cls, k) -- 寻找超类成员
 
     -- 如果查找不到，抛出一个错误
-    if not item then
-      _G.error(("No attribute or method \"%s\" existing in %s's superclass."):format(k, sub.__classname), 2)
+    if not spueritem then
+      _G.error(("No attribute or method \"%s\" existing in %s's superclass."):format(k, cls.__classname), 2)
     end
 
     -- 如果找到一个方法，构造闭包
-    if type(item) == "function" then
+    if type(spueritem) == "function" then
       local function closure(obj, ...)
         if obj == cache then -- 重定向访问者
-          return item(cache[1], ...)
+          return spueritem(cache[1], ...)
         end
-        return item(obj, ...)
+        return spueritem(obj, ...)
       end
       cache[k] = closure -- 缓存这个闭包
       return closure
@@ -261,12 +259,12 @@ local interceptor = {
 local callsupercache = setmetatable({}, {
   __mode = "k", -- 弱键模式，对象销毁时清理缓存
   __index = function(self, obj)
-    local cache = setmetatable({obj,
-      rawget(obj, "__classname") and obj or obj.__class -- 获取子类
+    local cache = setmetatable({obj, 
+      rawget(obj, "__classname") and obj or obj.__class
     }, interceptor)
     self[obj] = cache
     return cache
-  end,
+  end
 })
 
 
@@ -282,19 +280,19 @@ end
 
 
 
--- 类创建器，仅处理语法
-local function class_creater(name, bases)
+-- 类创建器，用于处理语法
+local function class(name, bases)
   return function(rtb, ...) -- 捕获原始表
     rtb = rtb or {}
     if not rtb.__classname then
       local env = rtb.env or _G -- 支持指定命名空间，默认 _G
-      local meta = rtb.metaclass or _M -- 支持指定元类，默认 luaclass
+      local meta = rtb.metaclass or luaclass -- 支持指定元类，默认 luaclass
       rtb.metatable = nil
       local cls = meta(name, bases, rtb) -- 调用元类创建类
       env[name] = cls -- 自动绑定和类名相同的变量名
       return cls -- 顺便返回这个类
     end
-    return class_creater(name, {rtb, ...}) -- 捕获基类
+    return class(name, {rtb, ...}) -- 捕获基类
   end
 end
 
@@ -305,9 +303,9 @@ local function isinstance(obj, cls)
   local obj_cls = t == "table" and obj.__class
 
   if not cls then
-    return obj_cls or t
+    return obj_cls or t -- 单参数时返回类型
    elseif not obj_cls then
-    return t == cls
+    return t == cls -- 兼容 Lua 基本类型
   end
 
   local classes = obj_cls.__mro
@@ -321,14 +319,15 @@ local function isinstance(obj, cls)
 end
 
 
--- 导出三个全局函数
-_M.__export = {
+
+-- 导出组
+luaclass.__export = {
   _G,
-  luaclass = _M,
-  class = class_creater,
+  luaclass = luaclass,
+  class = class,
   super = super,
   isinstance = isinstance,
 }
 
 
-return _M
+return luaclass
