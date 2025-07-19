@@ -195,8 +195,8 @@ function luaclass.__new(mcls, name, bases, rtb)
   cls.__index = cls
 
   if rtb then
-    _Registry[rtb.env or _G][name] = cls
-    rtb.env = nil
+    _Registry[rtb.namespace or _G][name] = cls
+    rtb.namespace = nil
     for k, v in next, rtb do
       cls[k] = v
     end
@@ -285,7 +285,7 @@ local function class(name, bases)
   return function(rtb, ...) -- 捕获原始表
     rtb = rtb or {}
     if not rtb.__classname then
-      local env = rtb.env or _G -- 支持指定命名空间，默认 _G
+      local env = rtb.namespace or _G -- 支持指定命名空间，默认 _G
       local meta = rtb.metaclass or luaclass -- 支持指定元类，默认 luaclass
       rtb.metatable = nil
       local cls = meta(name, bases, rtb) -- 调用元类创建类
