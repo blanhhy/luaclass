@@ -1,0 +1,29 @@
+{
+  "displayName": "Lua类",
+  "name": "luaclass",
+  "description": "基于类的面向对象（纯lua版）",
+  "version": 1.7,
+  "author": "莎兰奈",
+  "exampleList":[
+    {
+      "name":"创建类",
+      "content":"-- 声明一个类\nclass \"类名\" {\n  attr = 0; -- 这是一个属性\n  -- __init方法\n  __init = function(self, ...)\n    \nend;\n  -- 一个普通方法\n  method = function(self)\n    \nend;\n}"
+    },
+    {
+      "name":"继承超类",
+      "content":"-- 声明一个类\nclass \"类名\"(超类) -- 继承超类\n{\n  -- 重写超类的方法\n  method = function(self)\n    super():method() -- 重写时调用超类方法\nend;\n}"
+    },
+    {
+      "name":"访问超类属性",
+      "content":"local superattr = super(class_or_object).attr"
+    },
+    {
+      "name":"调用超类方法",
+      "content":"super(class_or_object):method()"
+    },
+    {
+      "name":"判断所属类型",
+      "content":"class.A{}\nprint(isinstance(A(), A)) -- 输出 true"
+    }
+  ]
+}
