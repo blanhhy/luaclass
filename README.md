@@ -5,9 +5,9 @@
 
 ## 安装
 
-下载模块的主文件夹（[luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/luaclass)）并导入你的 Lua 模块路径。
+下载模块的主文件夹（[luaclass](https://github.com/blanhhy/luaclass/blob/main/luaclass)）并导入你的 Lua 模块路径。
 
-如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
+>如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
 
 在 Lua 脚本中使用该模块：
 
@@ -15,20 +15,16 @@
 require "luaclass"
 ```
 
-模块自动向 `_G` 中注入 `class`，`super`，`isinstance` 三个函数和元类 `luaclass`（相当于 Python 的 `type`）。
-
-本模块适配 [packagex](https://github.com/blanhhy/packagex) 的导入标准，因此也可以：
-
-```lua
-include "luaclass"
-```
+模块自动向 `_G` 中注入 `class`，`super`，`isinstance` 三个函数和元类 `luaclass`。
 
 ## 演示
 
 ### 1. 快速开始
 
 ```lua
--- 定义一个类 "MyClass"
+require "luaclass"
+
+-- 定义一个类 MyClass
 class "MyClass" {
   greet = function(self)
     print(("Hello from %s"):format(luaclass(self)));
@@ -127,8 +123,8 @@ print(z1 + z2)  --> 4 + 6i
 
 ## 可能的新功能
 
-可能即将到来的功能（不代表一定会实现）
+（不代表一定会实现）
 
-- **__list缓存**：动态缓存缓存类的属性和方法，方便调试。
-- **私有成员**: 引入一个私有成员的储存机制，增强对象封装性。
-- **继承基本类**: 允许继承 Lua 基本类型。
+* **__list缓存**：动态缓存缓存类的属性和方法，方便调试。
+* **私有成员**: 引入一个私有成员的储存机制，增强对象封装性。
+* **继承基本类**: 允许继承 Lua 基本类型。
