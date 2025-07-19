@@ -1,3 +1,36 @@
+### v1.7
+**Changelog**:
+- 新增支持创建时指定元类 `metaclass = yourMcls;` 和命名空间 `namespace = yourNs;`
+- 元类特性与 Python 对齐
+- 修复元方法无法被继承的问题
+- 不再支持 `class.Name {}` 语法，请一律使用 `class "Name" {}`
+- 弃用依赖，适配 `packagex`
+
+detail: https://github.com/blanhhy/luaclass/commit/7293ea7b74241eb35a37c4b5e10e6aa879f3ab70, https://github.com/blanhhy/luaclass/commit/19f4657ffc57cdb845c2282a262d1f3ada741fd7
+
+-------
+
+**Full Changelog**: https://github.com/blanhhy/luaclass/compare/v1.6...v1.7
+
+>化繁为简
+>1. 新增元类与命名空间相关支持
+（加入 __new 方法与 _Registry 设计）
+>2. 简化了许多代码逻辑
+>3. 弃用第三方依赖，并适配 packagex
+>4. 优化了性能
+
+>Fix some issues
+>1. 修复长期以来一直没发现的元方法无法继承的问题
+>（目前的解决方法是计算完 MRO 后复制所有子类中没有但超类有的元方法）
+>2. 修复持续几个版本的错误地分配了元类方法的问题
+>3. 分离了一般对象和类的大多数函数
+（前者是默认行为，后者是由元类定制的行为，理应分离）
+>4. 现在 lookup 函数只用于继承场景，实例方法由 __index 表实现
+>5. 新增了一个关于游戏角色的测试脚本
+>6. 其他小改动
+
+
+
 ### v1.6
 **Changelog**:
 * 全面支持多继承，可以通过 `A.__mro` 来查看继承链
