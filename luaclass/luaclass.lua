@@ -1,15 +1,15 @@
 local _G, type, next, rawget, rawset, setmetatable = _G, type, next, rawget, rawset, setmetatable
 
 local _ENV = {}
-if _G.tonumber(_G._VERSION:sub(5, -1)) < 5.2 then
+if _G._VERSION:sub(-3) < "5.2" then
   _G.setfenv(1, _ENV) -- 旧版环境机制兼容
 end
 
 
 -- 注册表：以命名空间+类名为索引，记录所有已知的类
-local weaktb = {__mode = "kv"}
+local weaktb = {__mode = 'v'}
 local _Registry = setmetatable({}, {
-  __mode = "k",
+  __mode = 'k',
   __index = function(self, ns) -- 自动创建新的引用空间
     local cache = setmetatable({}, weaktb)
     rawset(self, ns, cache)
@@ -19,7 +19,6 @@ local _Registry = setmetatable({}, {
 
 -- 模块本身也是一个类，所有类都是luaclass的实例
 local luaclass = _ENV
-
 luaclass.__classname = "luaclass";
 luaclass._Registry = _Registry;
 function luaclass:__tostring()
@@ -204,7 +203,7 @@ function luaclass.__new(mcls, name, bases, rtb)
 
   setmetatable(cls, mcls) -- 绑定元类
   compute_mro(cls, bases) -- 计算MRO
-  
+
   -- 由于 Lua 不从 __index 中查找元方法所以只好复制
   for i = 1, 21 do
     local name = mm_name[i]
@@ -250,16 +249,16 @@ local interceptor = {
       return closure
     end
 
-    return item -- 如果找到一个属性，直接返回
+    return superitem -- 如果找到一个属性，直接返回
   end
 }
 
 
 -- 缓存 super 调用结果
 local callsupercache = setmetatable({}, {
-  __mode = "k", -- 弱键模式，对象销毁时清理缓存
+  __mode = 'k', -- 弱键模式，对象销毁时清理缓存
   __index = function(self, obj)
-    local cache = setmetatable({obj, 
+    local cache = setmetatable({obj,
       rawget(obj, "__classname") and obj or obj.__class
     }, interceptor)
     self[obj] = cache
@@ -284,15 +283,15 @@ end
 local function class(name, bases)
   return function(rtb, ...) -- 捕获原始表
     rtb = rtb or {}
-    if not rtb.__classname then
-      local env = rtb.namespace or _G -- 支持指定命名空间，默认 _G
-      local meta = rtb.metaclass or luaclass -- 支持指定元类，默认 luaclass
-      rtb.metatable = nil
-      local cls = meta(name, bases, rtb) -- 调用元类创建类
-      env[name] = cls -- 自动绑定和类名相同的变量名
-      return cls -- 顺便返回这个类
+    if rtb.__classname then
+      return class(name, {rtb, ...}) -- 捕获基类
     end
-    return class(name, {rtb, ...}) -- 捕获基类
+    local env = rtb.namespace or _G -- 支持指定命名空间，默认 _G
+    local meta = rtb.metaclass or luaclass -- 支持指定元类，默认 luaclass
+    rtb.metatable = nil
+    local cls = meta(name, bases, rtb) -- 调用元类创建类
+    env[name] = cls -- 自动绑定和类名相同的变量名
+    return cls -- 顺便返回这个类
   end
 end
 

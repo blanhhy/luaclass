@@ -3,7 +3,6 @@ local _M = require "luaclass.luaclass"
 local packagex = package.loaded.packagex
 
 if packagex and packagex.inited then
-  type = _M
   __export = _M.__export
   else
     local env = _M.__export[1]
@@ -13,7 +12,5 @@ if packagex and packagex.inited then
       end
     end
 end
-
-_M.__export = nil
 
 return _M
