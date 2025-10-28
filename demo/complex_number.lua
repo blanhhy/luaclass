@@ -1,4 +1,6 @@
-require "luaclass"
+if not require "luaclass" then
+  dofile "../luaclass/init.lua"
+end
 
 -- 定义一个复数类
 class "Complex" {
@@ -52,4 +54,4 @@ local z1 = Complex(1, 2)
 local z2 = Complex(3, 4)
 
 print(z1 + z2) --> 4 + 6i
-print(z1*z2) --> -5 + 10i
+print(z1 * z2) --> -5 + 10i

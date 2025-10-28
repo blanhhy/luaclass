@@ -1,4 +1,6 @@
-require "luaclass"
+if not require "luaclass" then
+  dofile "../luaclass/init.lua"
+end
 
 -- 基础游戏对象类
 class "GameObject" {
@@ -29,7 +31,7 @@ class "CombatUnit" {
 }
 
 -- 玩家角色类（多继承）
-class "Player"(GameObject, CombatUnit) {
+class "Player" (GameObject, CombatUnit) {
   __init = function(self, name, hp)
     super(self):__init(name)  -- 调用GameObject的初始化
     self.hp = hp or 100

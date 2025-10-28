@@ -1,4 +1,6 @@
-require "luaclass"
+if not require "luaclass" then
+  dofile "../luaclass/init.lua"
+end
 require "tablex"
 
 class "A" {
@@ -43,7 +45,7 @@ class "O"(M, N) {}
 --------
 
 
---[[ 复杂的例子
+-- 复杂的例子
 class "O" {}
 
 class "A"(O) {}
@@ -66,4 +68,3 @@ class "M"(J, K, L) {}
 -- 错误信息：
 -- Cannot create class 'M' due to MRO conflict. (in bases: D, A)
 -- Processing traceback: M -> J -> K -> L -> E -> F -> G -> H -> A -> B -> C -> D ... D@12 -> A@9 (in branch 'J', level #3)
-]]

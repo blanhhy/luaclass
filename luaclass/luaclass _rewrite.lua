@@ -1,6 +1,6 @@
----@alias luaclass {__classname:string, [any]:any}
 
 local mergeMROs = require("luaclass.mergemros")
+local namespace = require("luaclass.namespace")
 
 local _G, type, next, rawget, rawset, setmetatable = _G, type, next, rawget, rawset, setmetatable
 
@@ -24,7 +24,7 @@ local _Registry = setmetatable({}, {
 })
 
 -- 模块本身也是一个类，所有类都是luaclass的实例
-local luaclass = _ENV ---@type luaclass
+local luaclass = _ENV
 
 luaclass.__classname = "luaclass";
 luaclass._Registry = _Registry;
