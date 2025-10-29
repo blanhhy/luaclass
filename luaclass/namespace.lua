@@ -1,23 +1,14 @@
----@diagnostic disable: assign-type-mismatch
-
+-- 
 -- 命名空间管理器
 
--- 这个文件是 Luaclass 库的命名空间管理器。
--- 它负责管理命名空间的创建、删除、查找等操作。
 
 local _G = _G -- Lua 的全局命名空间
 local type, next, rawset, getmetatable, setmetatable = _G.type, _G.next, _G.rawset, _G.getmetatable, _G.setmetatable
 
-local namespace = {_G = _G}     -- 根命名空间
+local namespace = {_G = _G}     -- 根命名空间容器
 local spacename = {[_G] = "_G"} -- 命名空间名称映射
 local protected = {_G = true}   -- 禁止删除的命名空间
 
--- 命名空间的元表
-local ns_MT = {
-  __index = namespace -- 确保不管在什么命名空间中，都能用完整路径范围任何命名空间的成员
-}
-
-setmetatable(_G, ns_MT)
 
 -- 尝试注册一些 Lua 标准库
 local function prequire(name)
@@ -25,7 +16,6 @@ local function prequire(name)
   if ok then
     namespace[name] = lib
     spacename[lib]  = name
-    setmetatable(lib, ns_MT)
   end
   return lib
 end
@@ -43,37 +33,6 @@ prequire("utf8")
 prequire("ffi")
 prequire("jit")
 
-
--- 辅助函数：安全设置元表
-local function set_ns_MT(ns)
-  local existed_MT = getmetatable(ns)
-  if not existed_MT then
-    setmetatable(ns, ns_MT)
-    return
-  end
-
-  local __index = existed_MT.__index
-  local type = type(__index)
-
-  existed_MT.__index =
-    type == "table" and function(self, key)
-      local val = __index[key]
-      if val == nil then
-        val = namespace[key]
-      end
-      return val
-    end
-
-    or type == "function" and function(self, key)
-      local val = __index(self, key)
-      if val == nil then
-        val = namespace[key]
-      end
-      return val
-    end
-
-    or namespace
-end
 
 
 -- 辅助函数：检查合法标识符
@@ -113,6 +72,63 @@ end
 
 
 
+local function using_factory(portal, mt)
+  local list = portal["$list"]
+  
+  return function(ns)
+    ns = ns and (namespace[ns]or(spacename[ns]and(ns)or(nil)))
+    if not ns then error("using nothing!", 2) end
+    
+    list.n        = list.n + 1
+    list[list.n]  = ns
+    mt.__newindex = list[1]
+    
+    return portal
+  end
+end
+
+-- 在提供主命名空间之前, 不可以定义变量
+local function disallow(_, name)
+  error(("definition of variable '%s' in namespace ot allowed, namespace not set")
+    :format(name), 2)
+end
+
+local function ns_get_val(portal, name)
+  local value
+  local ns_list = portal["$list"]
+  for i = 1, ns_list.n do
+    value = ns_list[i][name]
+    if nil ~= value then
+      return value
+    end
+  end
+end
+
+
+-- 使用命名空间, 返回一个用作 _ENV 的表
+local function ns_use(ns)
+  
+  local ns_list   = {n=0} -- 要使用的命名空间列表
+  local ns_portal = {     -- 命名空间访问入口
+	["$list"]  = ns_list;
+  }
+  local ns_MT     = {     -- 命名空间入口的元表
+	__index       = ns_get_val;
+	__newindex    = disallow;
+  }
+  
+  ns_portal.using = using_factory(ns_portal, ns_MT);
+  
+  -- 如果提供了主命名空间, 立即使用它
+  -- 也可以稍后再提供, 但这期间不可以定义变量
+  if ns then
+	ns_portal.using(ns)
+  end
+  
+  return setmetatable(ns_portal, ns_MT)
+end
+
+
 -- 创建命名空间
 local function ns_new(ns_name, ns)
 
@@ -143,7 +159,7 @@ local function ns_new(ns_name, ns)
 
   -- 处理顶层空间
   if not ns_name:find("%.") then
-	-- 使用了非法标识符
+  -- 使用了非法标识符
     if not check_identifier(ns_name) then
       error(("bad name of namespace '%s', identifier excepetd.")
         :format(ns_name), 2)
@@ -151,7 +167,6 @@ local function ns_new(ns_name, ns)
 
     namespace[ns_name] = ns
     spacename[ns] = ns_name
-    set_ns_MT(ns)
     return ns
   end
 
@@ -172,7 +187,6 @@ local function ns_new(ns_name, ns)
 
     namespace[ns_name] = ns
     spacename[ns] = ns_name
-    set_ns_MT(ns)
     return ns
   end
 
@@ -210,7 +224,7 @@ local function ns_del(ns)
 end
 
 
--- 遍历根命名空间
+-- 根命名空间迭代器
 local function ns_next(_, ns_name)
   if ns_name and not namespace[ns_name] then
     return nil, "not a namespace"
@@ -222,6 +236,7 @@ end
 
 -- 导出接口
 return setmetatable({
+  use  = ns_use,
   new  = ns_new,
   del  = ns_del,
   iter = ns_next,
