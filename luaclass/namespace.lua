@@ -1,7 +1,10 @@
 -- 
 -- 命名空间管理器
 
+-- 这个 namespace 原本是为 luaclass 设计的, 但不与之耦合
+-- 可以广泛地运用于各种模块或项目中
 
+local _M
 local _G = _G -- Lua 的全局命名空间
 local type, next, rawset, getmetatable, setmetatable = _G.type, _G.next, _G.rawset, _G.getmetatable, _G.setmetatable
 
@@ -9,6 +12,9 @@ local namespace = {_G = _G}     -- 根命名空间容器
 local spacename = {[_G] = "_G"} -- 命名空间名称映射
 local protected = {_G = true}   -- 禁止删除的命名空间
 
+local weak_MT = {__mode = 'k'}
+setmetatable(spacename, weak_MT)
+setmetatable(protected, weak_MT)
 
 -- 尝试注册一些 Lua 标准库
 local function prequire(name)
@@ -36,9 +42,6 @@ prequire("jit")
 
 
 -- 辅助函数：检查合法标识符
-local invalid_char = (load or loadstring)("local 〇=0") -- 取决于解释器的实际实现
-  and "[^%w_\128-\244]" or "[^%w_]" -- 非法字符正则表达式
-
 local keywords = {
   "and", "break", "do", "else", "elseif", "end", "false", "for",
   "function", "goto", "if", "in", "local", "nil", "not", "or",
@@ -46,21 +49,11 @@ local keywords = {
 } -- Lua 关键字
 
 local function check_identifier(str)
-  if str == '' then
-    return false
-  end
+  if str == '' then return false end -- 不能为空
+  if str:match(_M.unidode and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
+  if str:match("^%d") then return false end -- 首字符不能是数字
 
-  -- 检查是否包含非法字符
-  if str:match(invalid_char) then
-    return false
-  end
-
-  -- 检查首字符是否为数字
-  if str:match("^%d") then
-    return false
-  end
-
-  -- 检查是否为关键字
+  -- 不能是保留词
   for i = 1, #keywords do
     if str == keywords[i] then
       return false
@@ -72,20 +65,6 @@ end
 
 
 
-local function using_factory(portal, mt)
-  local list = portal["$list"]
-  
-  return function(ns)
-    ns = ns and (namespace[ns]or(spacename[ns]and(ns)or(nil)))
-    if not ns then error("using nothing!", 2) end
-    
-    list.n        = list.n + 1
-    list[list.n]  = ns
-    mt.__newindex = list[1]
-    
-    return portal
-  end
-end
 
 -- 在提供主命名空间之前, 不可以定义变量
 local function disallow(_, name)
@@ -106,7 +85,7 @@ end
 
 
 -- 使用命名空间, 返回一个用作 _ENV 的表
-local function ns_use(ns)
+local function ns_use()
   
   local ns_list   = {n=0} -- 要使用的命名空间列表
   local ns_portal = {     -- 命名空间访问入口
@@ -117,12 +96,16 @@ local function ns_use(ns)
 	__newindex    = disallow;
   }
   
-  ns_portal.using = using_factory(ns_portal, ns_MT);
-  
-  -- 如果提供了主命名空间, 立即使用它
-  -- 也可以稍后再提供, 但这期间不可以定义变量
-  if ns then
-	ns_portal.using(ns)
+  -- 定义 using 函数
+  function ns_portal.using(ns)
+    ns = ns and (namespace[ns]or(spacename[ns]and(ns)or(nil)))
+    if not ns then error("using nothing!", 2) end
+    
+    ns_list.n           = ns_list.n + 1
+    ns_list[ns_list.n]  = ns
+    ns_MT.__newindex    = ns_list[1]
+    
+    return portal
   end
   
   return setmetatable(ns_portal, ns_MT)
@@ -224,6 +207,13 @@ local function ns_del(ns)
 end
 
 
+-- 获取命名空间对象和查找命名空间路径
+-- get 识别命名空间的全名或表对象, 返回表对象或nil
+-- find 只识别命名空间表对象, 返回全名或nil
+local function ns_get(id)return(id)and(namespace[id]or(spacename[id]and(id)or(nil)))or(nil)end
+local function ns_find(ns)return(ns)and(spacename[ns])or(nil)end
+
+
 -- 根命名空间迭代器
 local function ns_next(_, ns_name)
   if ns_name and not namespace[ns_name] then
@@ -235,26 +225,24 @@ end
 
 
 -- 导出接口
-return setmetatable({
-  use  = ns_use,
-  new  = ns_new,
-  del  = ns_del,
-  iter = ns_next,
-  get  = function(ns_name)
-    local ns = namespace[ns_name]
-    if ns then return ns end
-    return nil, "not a namespace"
-  end,
-  which = function(ns)
-    local path = spacename[ns]
-    if path then return path end
-    return nil, "not a namespace"
-  end
+_M = setmetatable({
+  use  = ns_use;
+  new  = ns_new;
+  del  = ns_del;
+  get  = ns_get;
+  find = ns_find;
+  iter = ns_next;
+  unicode = not not (load or loadstring) -- 是否允许 unicode 字符
+    ("local 〇=0"); -- 默认取决于解释器的实际实现, 可以修改
 }, {
+  __index = namespace;
   __call = function (_, ns_name)
+    local ns_name, var_name = ns_name:match("^([^:]+):*([^:]*)$")
+    if var_name and #var_name>0 then return namespace[ns_name][var_name] end
     return function (ns)
       return ns_new(ns_name, ns)
     end
-  end,
-  __index = namespace
+  end;
 })
+
+return _M

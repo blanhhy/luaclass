@@ -1,12 +1,13 @@
 local namespace = require "luaclass.namespace"
 
+
 namespace "Game.Deltarune.roles" {
   kris = { name = "kris dreemurr", is_hero = 1, ethnicity = "human", identity = "player container" };
-  noelle = { name = "noelle holliday", is_hero = 2, ethnicity = "moster", identity = "angel" };
+  noelle = { name = "noelle holliday", is_hero = 2, ethnicity = "monster", identity = "angel" };
   ralsei = { name = "ralsei", is_hero = 3, ethnicity = "darkner", identity = "dark prince" };
-  susie = { name = "susie", ethnicity = "moster", identity = "main character" };
+  susie = { name = "susie", ethnicity = "monster", identity = "main character" };
   lancer = { name = "lancer", ethnicity = "darker", identity = "now i am the father!" };
-  asgore = { name = "asgore dreemurr", ethnicity = "moster", identity = "flower king" };
+  asgore = { name = "asgore dreemurr", ethnicity = "monster", identity = "flower king" };
   -- ...
 }
 

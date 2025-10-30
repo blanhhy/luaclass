@@ -1,9 +1,13 @@
-if not require "luaclass" then
-  dofile "../luaclass/init.lua"
-end
+require "luaclass"
+
+namespace.new'Game'
+
+_ENV = namespace.use()
+using'Game'
+using'_G'
 
 -- 基础游戏对象类
-class "GameObject" {
+class "Game::GameObject" {
   __init = function(self, name)
     self.name = name
     self.position = {x=0, y=0}
@@ -17,7 +21,7 @@ class "GameObject" {
 }
 
 -- 战斗能力类（可被继承）
-class "CombatUnit" {
+class "Game::CombatUnit" {
   attack = function(self, target)
     print(("%s攻击了%s"):format(self.name, target.name))
   end;
@@ -31,7 +35,7 @@ class "CombatUnit" {
 }
 
 -- 玩家角色类（多继承）
-class "Player" (GameObject, CombatUnit) {
+class "Game::Player" (GameObject, CombatUnit) {
   __init = function(self, name, hp)
     super(self):__init(name)  -- 调用GameObject的初始化
     self.hp = hp or 100
@@ -46,7 +50,7 @@ class "Player" (GameObject, CombatUnit) {
 }
 
 -- 武器类
-class "Weapon" {
+class "Game::Weapon" {
   __init = function(self, name, bonus)
     self.name = name
     self.attack_bonus = bonus
@@ -63,3 +67,12 @@ local hero = Player("勇者", 150)
 hero:move(5, 3)    --> 玩家特殊移动
 hero:attack(sword) --> 基础攻击
 local total_damage = hero + sword --> 伤害提升
+
+
+--[[
+输出:
+>> 玩家脚步音效 <<
+勇者移动到位置(5, 3)
+勇者攻击了圣剑
+勇者装备圣剑后伤害提升至25
+]]

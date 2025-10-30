@@ -1,56 +1,46 @@
----@alias luaclass {__classname:string, [any]:any}
+--
+-- Luaclass 纯lua的基于类OOP机制
 
 local mergeMROs = require("luaclass.mergemros")
+local namespace = require("luaclass.namespace")
 
 local _G, type, next, rawget, rawset, setmetatable = _G, type, next, rawget, rawset, setmetatable
 
-local _ENV = {}
-
--- 旧版环境机制兼容
-if _G.tonumber(_G._VERSION:sub(-3)) < 5.2 then
-  _G.setfenv(1, _ENV)
+local function new_instance(cls, ...)
+  local inst = cls:__new(...)
+  local init = cls.__init
+  if init then init(inst, ...) end
+  return inst
 end
 
-local weaktb = {__mode = 'v'}
+local luaclass = {
+  __classname  = "luaclass";
+  __tostring   = function(self) return self.__classname end;
+  __call       = new_instance;
+} -- 基本元类
 
--- 注册表：以命名空间+类名为索引，记录所有已知的类
-local _Registry = setmetatable({}, {
-  __mode = 'k',
-  __index = function(self, ns) -- 自动创建新的引用空间
-    local cache = setmetatable({}, weaktb)
-    rawset(self, ns, cache)
-    return cache
-  end
-})
+local Object   = {
+  __classname  = "Object";
+  __tostring   = function(self) return ("<%s object>"):format(self.__class.__classname) end;
+  __new        = function(self) return setmetatable({__class = self}, self) end;
+}   -- 根类
 
--- 模块本身也是一个类，所有类都是luaclass的实例
-local luaclass = _ENV ---@type luaclass
-
-luaclass.__classname = "luaclass";
-luaclass._Registry = _Registry;
-
-function luaclass:__tostring()
-  return self.__classname
-end
-
--- luaclass自己也是自己的实例
 luaclass.__class = luaclass
+Object.__class   = luaclass
+
+luaclass.__mro   = {luaclass, Object, n=2, lv={1, 1, n=2}}
+Object.__mro     = {Object, n=1, lv={1, n=1}}
+
 setmetatable(luaclass, luaclass)
-
-_Registry[_G].luaclass = luaclass
-luaclass.__mro = {luaclass, n = 1, lv = {1, n = 1}}
+setmetatable(Object, luaclass)
 
 
--- 计算MRO
-local function compute_mro(cls, bases)
-  if rawget(cls, "__mro") then return end -- 已经计算过MRO，直接返
-  local mro, err = mergeMROs(cls, bases) -- 合并MRO
-  if err then
-    _G.error(err:format(cls), 3)
-  end
-  rawset(cls, "__mro", mro) -- 设置类的__mro属性
-end
-
+-- 所有类的默认命名空间
+-- 如果创建时不指定命名空间, 默认添加到这里
+local class_NS = namespace.new("class", {
+  luaclass = luaclass;
+  Object   = Object;
+})
 
 
 -- 依据MRO查找属性和方法
@@ -65,70 +55,85 @@ end
 luaclass.__index = lookup
 
 
--- 一般对象字符串化（默认行为）
-local function obj2str(self)
-  return ("<%s object>"):format(self.__class.__classname)
-end
-
--- 创建一般对象（默认行为）
-local function object(cls)
-  return setmetatable({ __class = cls }, cls)
-end
-
-
-
-local mm_name = {
+local mm_names = {
   "__add", "__sub", "__mul", "__div", "__idiv", "__mod", "__pow",
   "__unm", "__band", "__bor", "__bxor", "__bnot", "__shl", "__shr",
   "__concat", "__len", "__eq", "__lt", "__le", "__call", "__gc"
 }
 
 -- 创建一个类
-function luaclass.__new(mcls, name, bases, rtb)
-  if not (bases or rtb) then -- 单参数调用时，返回对象的类
+function luaclass.__new(mcls, name, bases, clstb)
+  if not (bases or clstb) then -- 单参数调用时，返回对象的类
     local t = type(name)
     return t == "table" and name.__class or t
   end
+  
+  if not bases or not bases[1] then
+   bases = {Object} -- 默认继承 Object
+  end
+  
+  -- 获取在名字中指定的命名空间
+  local ns_name, name = name:match("^([^:]-):*([^:]+)$")
+  ns_name = ns_name and (ns_name ~= '' and ns_name or nil)
+  local ns
 
   local cls = {
-    __classname = name,
-    __class = mcls,
-    __new = object,
-    __tostring = obj2str,
+    __classname = name;
+    __class     = mcls;
+    __new       = Object.__new; -- 这个方法比较常用
+    __tostring  = Object.__tostring;
   }
+  
   cls.__index = cls
 
-  if rtb then
-    local ns = rtb.namespace or _G
-    ns[name] = cls -- 自动绑定和类名相同的变量名
-    _Registry[ns][name] = cls
-    rtb.namespace = nil
-    for k, v in next, rtb do
+  -- 弹出 namespace 字段, 然后复制所有成员到类中
+  if clstb then
+    ns = namespace.get(clstb.namespace)
+    local ns_name_ = ns and namespace.find(ns)
+    clstb.namespace = nil
+    
+    -- 如果用两种方式指定了命名空间, 两次指定必须相同
+    if ns_name_ then
+      ns_name = (ns_name and ns_name1 ~= ns_name2 and
+      _G.error(("specified namespaces dismatch in class '%s'")
+        :format(name), 3))
+                and ns_name or ns_name_
+    end
+    
+    for k, v in next, clstb do
       cls[k] = v
     end
   end
 
-  setmetatable(cls, mcls) -- 绑定元类
-  compute_mro(cls, bases) -- 计算MRO
-
-  -- 由于 Lua 不从 __index 中查找元方法所以只好复制
-  for i = 1, 21 do
-    local name = mm_name[i]
-    local mm = cls[name]
-    if not rawget(cls, name) and mm then
-      cls[name] = mm
+  -- 计算MRO
+  local mro, err = mergeMROs(cls, bases)
+  if err then _G.error(err, 3) end
+  
+  cls.__mro = mro
+  setmetatable(cls, mcls)
+  
+  -- 由于 Lua 不从 __index 中查找元方法
+  -- 所以要继承元方法只好从基类中复制
+  local mm_name, base_mm
+  
+  for i = 1, #mm_names do
+    mm_name = mm_names[i]
+    base_mm = not rawget(cls, mm_name) and cls[mm_name]
+    if base_mm then
+      cls[mm_name] = base_mm
     end
   end
+  
+  -- 注册类到对应的命名空间
+  ns = ns or (ns_name
+       and (namespace.get(ns_name)
+       or namespace.new(ns_name)))
+       or class_NS
+
+  ns[name] = cls
+  cls.__ns_name = ns_name or namespace.find(ns)
+  
   return cls
-end
-
-
--- 实例化流程
-function luaclass.__call(cls, ...)
-  local inst = cls:__new(...)
-  local init = cls.__init
-  if init then init(inst, ...) end
-  return inst
 end
 
 
@@ -188,14 +193,18 @@ end
 
 -- 类创建器，用于处理语法
 local function class(name, bases)
-  return function(rtb, ...) -- 捕获原始表
-    rtb = rtb or {}
-    if rtb.__classname then
-      return class(name, {rtb, ...}) -- 捕获基类
+  return function(clstb, ...) -- 捕获成员表
+    clstb = clstb or {}
+    
+    -- 如果获取到一个类
+    if clstb.__classname then
+      return class(name, {clstb, ...}) -- 捕获基类
     end
-    local meta = rtb.metaclass or luaclass -- 支持指定元类，默认 luaclass
-    rtb.metatable = nil
-    return meta(name, bases, rtb) -- 调用元类创建类
+    
+    local mcls = clstb.metaclass or luaclass -- 支持指定元类，默认 luaclass
+    clstb.metaclass = nil
+    
+    return mcls(name, bases, clstb) -- 调用元类创建类
   end
 end
 
@@ -226,11 +235,12 @@ end
 
 -- 导出组
 luaclass.__export = {
-  _G,
-  luaclass   = luaclass,
-  class      = class,
-  super      = super,
-  isinstance = isinstance,
+  _G;
+  luaclass   = luaclass;
+  namespace  = namespace;
+  class      = class;
+  super      = super;
+  isinstance = isinstance;
 }
 
 

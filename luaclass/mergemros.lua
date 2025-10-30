@@ -3,9 +3,7 @@
 
 
 -- 合并基类的 MRO
-local function mergeMROs(cls, ---@param cls luaclass
-                        bases ---@param bases table
-)
+local function mergeMROs(cls, bases)
   if not bases or not bases[1] then
     return {cls, n = 1, lv = {1, n = 1}}
   end
@@ -101,7 +99,11 @@ local function mergeMROs(cls, ---@param cls luaclass
             if currClassSeenPos < minConflictPos then -- 发生错误
 
               -- 放弃合并, 收集信息, 构造错误提示
-              local errMsgFmt = "Cannot create class '%%s' due to MRO conflict. (in bases: %s, %s)\nProcessing traceback: %s ... %s@%d -> %s@%d (at MRO of class '%s', level #%s)"
+              local errMsg = "Cannot create class '%s' due to MRO conflict. (in bases: %s, %s)\n"
+                           .."Processing traceback:\n"
+                           .."    [ %s ]\n"
+                           .."    interrupt at MRO of superclass '%s', level #%s"
+              
               local tostring, concat = _G.tostring, _G.table.concat
 
               local lastConflictPos   = minConflictPos      -- 上一个冲突位置
@@ -112,22 +114,25 @@ local function mergeMROs(cls, ---@param cls luaclass
               local whichLevel        = whichLevel          -- 冲突所在的层级
 
               local mergedMROPath = (function()
-                local str_list = {}
-                for i = 1, #mro do
+                local str_list = {cls.__classname}
+                for i = 2, #mro do
                   str_list[i] = tostring(mro[i])
+                    .. (mro[i] == lastConflictClass and ("@"..lastConflictPos)
+                    or  mro[i] == currConflictClass and ("@"..currConflictPos)
+                    or  "")
                 end
+                local count = #str_list
+                str_list[count+1] = tostring(lastConflictClass)..("@"..(count+1))
+                str_list[count+2] = tostring(currConflictClass)..("@"..(count+2))
                 return concat(str_list, " -> ")
               end)() -- 已知的 MRO 路径
 
               return nil,
-              errMsgFmt:format(
+              errMsg:format(
+				cls.__classname,
                 lastConflictClass,
                 currConflictClass,
                 mergedMROPath,
-                lastConflictClass,
-                lastConflictPos,
-                currConflictClass,
-                currConflictPos,
                 whichChain,
                 whichLevel
               )

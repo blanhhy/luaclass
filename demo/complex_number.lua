@@ -1,9 +1,8 @@
-if not require "luaclass" then
-  dofile "../luaclass/init.lua"
-end
+require "luaclass"
 
 -- 定义一个复数类
-class "Complex" {
+class "_G::Complex" {
+
   __init = function(self, real, imag)
     self.real = real
     self.imag = imag
