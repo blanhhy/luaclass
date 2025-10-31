@@ -4,7 +4,8 @@
 local mergeMROs = require("luaclass.mergemros")
 local namespace = require("luaclass.namespace")
 
-local _G, type, next, rawget, rawset, setmetatable = _G, type, next, rawget, rawset, setmetatable
+local _G, type, next, select, rawget, rawset, setmetatable
+    = _G, type, next, select, rawget, rawset, setmetatable
 
 local function new_instance(cls, ...)
   local inst = cls:__new(...)
