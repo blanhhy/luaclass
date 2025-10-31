@@ -1,27 +1,29 @@
 # Luaclass
 
-**Luaclass** 是一个为 Lua 提供基于类的面向对象编程（Class-based OOP）支持的模块，旨在让 Lua 的面向对象编程更加优雅。
+这是一个为 Lua 提供基于类的面向对象编程（Class-based OOP）支持的模块，旨在让 Lua 面向对象编程变得更加简单、优雅，同时功能强大。
 
-## 安装
+## 安装 & 导入
 
 下载模块的主文件夹（[luaclass](https://github.com/blanhhy/luaclass/blob/main/luaclass)）并导入你的 Lua 模块路径。
 
->如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
+> 如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
 
 在 Lua 脚本中使用该模块：
 
 ```lua
 require "luaclass"
-
--- _G 中新增的内容:
--- luaclass: metaclass
--- namespace: namespacelib
--- class: function
--- super: function
--- isinstance: function
 ```
 
-## 演示
+导入后，模块会自动向 _G 中注入以下内容：
+
+- `luaclass`: metaclass
+- `namespace`: namespacelib
+- `class`: function
+- `super`: function
+- `isinstance`: function
+
+
+## 特性 & 说明
 
 ### 1. 快速开始
 

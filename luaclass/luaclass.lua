@@ -85,24 +85,24 @@ local mm_names = {
 -- 创建一个类
 function luaclass.__new(mcls, ...)
   local arg_count = select('#', ...)
-  
+
   if arg_count == 0 then
     _G.error("bad argument #1 to 'luaclass.__new' (value expected)", 3)
   end
-  
+
   -- 单参数调用时，返回对象的类
   if arg_count == 1 then
     local obj = ...
     local typ = type(obj)
     return typ == "table" and obj.__class or typ
   end
-  
+
   local name, bases, clstb = ...
-  
+
   if not bases or not bases[1] then
-   bases = {Object} -- 默认继承 Object
+    bases = {Object} -- 默认继承 Object
   end
-  
+
   -- 获取在名字中指定的命名空间
   local ns_name, name = name:match("^([^:]-):*([^:]+)$")
   ns_name = ns_name and (ns_name ~= '' and ns_name or 'class')
@@ -114,7 +114,7 @@ function luaclass.__new(mcls, ...)
     __new       = Object.__new; -- 这个方法比较常用
     __tostring  = Object.__tostring;
   }
-  
+
   cls.__index = cls
 
   -- 复制所有成员到类中
@@ -127,14 +127,14 @@ function luaclass.__new(mcls, ...)
   -- 计算MRO
   local mro, err = mergeMROs(cls, bases)
   if err then _G.error(err, 3) end
-  
+
   cls.__mro = mro
   setmetatable(cls, mcls)
-  
+
   -- 由于 Lua 不从 __index 中查找元方法
   -- 所以要继承元方法只好从基类中复制
   local mm_name, base_mm
-  
+
   for i = 1, #mm_names do
     mm_name = mm_names[i]
     base_mm = not rawget(cls, mm_name) and cls[mm_name]
@@ -142,11 +142,11 @@ function luaclass.__new(mcls, ...)
       cls[mm_name] = base_mm
     end
   end
-  
+
   -- 注册类到对应的命名空间
   local ns = namespace.get(ns_name)
   ns[name] = cls
-  
+
   return cls
 end
 
@@ -207,15 +207,15 @@ end
 local function class(name, bases)
   return function(clstb, ...) -- 捕获成员表
     clstb = clstb or {}
-    
+
     -- 如果获取到一个类
     if clstb.__classname then
       return class(name, {clstb, ...}) -- 捕获基类
     end
-    
+
     local mcls = clstb.metaclass or luaclass -- 支持指定元类，默认 luaclass
     clstb.metaclass = nil
-    
+
     return mcls(name, bases, clstb) -- 调用元类创建类
   end
 end

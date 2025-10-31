@@ -51,7 +51,7 @@ https://github.com/blanhhy/luaclass/compare/v1.4...v1.6
 >
 >　新增 MRO 机制以支持多继承，现在类的 __superclass 属性是一个包含所有直接超类的序列，而 MRO 会存储在 __mro 属性中
 >
->　新增 compute_mro 函数用于计算 MRO 
+>　新增 compute_mro 函数用于计算 MRO
 >
 >　由于 Python 的C3线性化算法在 Lua 中难以实现，即使硬要实现也会因为过多的遍历严重影响性能，因此最终采用了“分块线性化”算法，损耗较少的性能就能得到和C3大差不差的结果（由于C3是深度优先，所有有时还是会有一点差异）
 >
