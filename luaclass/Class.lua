@@ -1,5 +1,4 @@
 local luaclass = require "luaclass"
-local Object   = Object
 
 local Class
 
