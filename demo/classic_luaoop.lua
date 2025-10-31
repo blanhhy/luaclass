@@ -18,10 +18,9 @@ p:sayHello() -- 输出: Hello, I am Bob
 
 -- 经典语法与 luaclass 语法共用同一套系统, 因此是完全兼容的
 
-class "ChinesePerson"(Person) {
+class "_G::ChinesePerson"(Person) {
   -- 注: 经典语法不指定命名空间默认是 _G
   -- 而用 luaclass 创建的类命名空间默认是 class
-  namespace = _G;
   
   ---@Override
   sayHello = function(self)

@@ -12,9 +12,14 @@
 
 ```lua
 require "luaclass"
-```
 
-模块自动向 `_G` 中注入 `class`，`super`，`isinstance` 三个函数和元类 `luaclass`。
+-- _G 中新增的内容:
+-- luaclass: metaclass
+-- namespace: namespacelib
+-- class: function
+-- super: function
+-- isinstance: function
+```
 
 ## 演示
 
@@ -23,10 +28,10 @@ require "luaclass"
 ```lua
 require "luaclass"
 
--- 定义一个类 MyClass
-class "MyClass" {
+-- 定义一个全局类 MyClass
+class "_G::MyClass" {
   greet = function(self)
-    print(("Hello from %s"):format(luaclass(self)));
+    print("Hello from "..tostring(luaclass(self)));
   end;
 }
 
@@ -39,18 +44,18 @@ obj:greet() --> Hello from MyClass
 
 ### 2. 继承
 
-要继承基类，只需在类名后插入一个括号，就像是在 C++ 或者 Python 中做的那样：
+要继承基类，只需在类名后插入一个括号，就像是在 Python 中做的那样：
 
 ```lua
 -- 定义一个基类
-class "Animal" {
+class "_G::Animal" {
   speak = function(self)
     print(self.name .. " makes a sound.")
   end;
 }
 
 -- 定义一个子类
-class "Dog"(Animal) -- 继承 Animal 类
+class "_G::Dog"(Animal) -- 继承 Animal 类
 {
   __init = function(self, name)
     self.name = name
@@ -74,7 +79,7 @@ super(dog):speak() -- 输出: Buddy makes a sound.
 
 ```lua
 -- 定义复数类
-class "Complex" {
+class "_G::Complex" {
   __init = function(self, real, imag)
     self.real = real
     self.imag = imag

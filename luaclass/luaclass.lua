@@ -13,23 +13,43 @@ local function new_instance(cls, ...)
   return inst
 end
 
+local function isinstance(obj, cls)
+  local typ = type(obj)
+  local obj_cls = typ == "table" and obj.__class
+
+  if not cls then return obj_cls or typ end -- 单参数时返回类型
+  if not obj_cls then return typ == cls end -- Lua 基本类型兼容
+
+  local mro = obj_cls.__mro
+
+  for i = 1, mro.n do
+    if cls == mro[i] then return true end -- 认为子类实例也是基类类型
+  end
+  return false
+end
+
 local luaclass = {
   __classname  = "luaclass";
+  __ns_name    = "class";
   __tostring   = function(self) return self.__classname end;
   __call       = new_instance;
 } -- 基本元类
 
 local Object   = {
   __classname  = "Object";
+  __ns_name    = "class";
   __tostring   = function(self) return ("<%s object>"):format(self.__class.__classname) end;
   __new        = function(self) return setmetatable({__class = self}, self) end;
-}   -- 根类
-
-luaclass.__class = luaclass
-Object.__class   = luaclass
+  isInstanceOf = isinstance;
+  getClass     = function(self) return self.__class end;
+  toString     = _G.tostring;
+} -- 根类
 
 luaclass.__mro   = {luaclass, Object, n=2, lv={1, 1, n=2}}
 Object.__mro     = {Object, n=1, lv={1, n=1}}
+
+luaclass.__class = luaclass
+Object.__class   = luaclass
 
 setmetatable(luaclass, luaclass)
 setmetatable(Object, luaclass)
@@ -62,11 +82,21 @@ local mm_names = {
 }
 
 -- 创建一个类
-function luaclass.__new(mcls, name, bases, clstb)
-  if not (bases or clstb) then -- 单参数调用时，返回对象的类
-    local t = type(name)
-    return t == "table" and name.__class or t
+function luaclass.__new(mcls, ...)
+  local arg_count = select('#', ...)
+  
+  if arg_count == 0 then
+    _G.error("bad argument #1 to 'luaclass.__new' (value expected)", 3)
   end
+  
+  -- 单参数调用时，返回对象的类
+  if arg_count == 1 then
+    local obj = ...
+    local typ = type(obj)
+    return typ == "table" and obj.__class or typ
+  end
+  
+  local name, bases, clstb = ...
   
   if not bases or not bases[1] then
    bases = {Object} -- 默认继承 Object
@@ -74,11 +104,11 @@ function luaclass.__new(mcls, name, bases, clstb)
   
   -- 获取在名字中指定的命名空间
   local ns_name, name = name:match("^([^:]-):*([^:]+)$")
-  ns_name = ns_name and (ns_name ~= '' and ns_name or nil)
-  local ns
+  ns_name = ns_name and (ns_name ~= '' and ns_name or 'class')
 
   local cls = {
     __classname = name;
+    __ns_name   = ns_name;
     __class     = mcls;
     __new       = Object.__new; -- 这个方法比较常用
     __tostring  = Object.__tostring;
@@ -86,20 +116,8 @@ function luaclass.__new(mcls, name, bases, clstb)
   
   cls.__index = cls
 
-  -- 弹出 namespace 字段, 然后复制所有成员到类中
+  -- 复制所有成员到类中
   if clstb then
-    ns = namespace.get(clstb.namespace)
-    local ns_name_ = ns and namespace.find(ns)
-    clstb.namespace = nil
-    
-    -- 如果用两种方式指定了命名空间, 两次指定必须相同
-    if ns_name_ then
-      ns_name = (ns_name and ns_name1 ~= ns_name2 and
-      _G.error(("specified namespaces dismatch in class '%s'")
-        :format(name), 3))
-                and ns_name or ns_name_
-    end
-    
     for k, v in next, clstb do
       cls[k] = v
     end
@@ -125,13 +143,8 @@ function luaclass.__new(mcls, name, bases, clstb)
   end
   
   -- 注册类到对应的命名空间
-  ns = ns or (ns_name
-       and (namespace.get(ns_name)
-       or namespace.new(ns_name)))
-       or class_NS
-
+  local ns = namespace.get(ns_name)
   ns[name] = cls
-  cls.__ns_name = ns_name or namespace.find(ns)
   
   return cls
 end
@@ -167,7 +180,7 @@ local interceptor = {
 
 
 -- 缓存 super 调用结果
-local callsupercache = setmetatable({}, {
+local supercache = setmetatable({}, {
   __mode = 'k', -- 弱键模式，对象销毁时清理缓存
   __index = function(self, obj)
     local cache = setmetatable({obj,
@@ -185,10 +198,8 @@ local function super(obj)
     local _, arg1 = _G.debug.getlocal(2, 1) -- 如果没有传入类或者对象，尝试获取函数第一参数
     obj = arg1 or _G.error("Failed to find any class.", 2) -- 如果没有，抛出一个错误
   end
-  return callsupercache[obj]
+  return supercache[obj]
 end
-
-
 
 
 -- 类创建器，用于处理语法
@@ -209,29 +220,9 @@ local function class(name, bases)
 end
 
 
-
-local function isinstance(obj, cls)
-  local t = type(obj)
-  local obj_cls = t == "table" and obj.__class
-
-  if not cls then
-    return obj_cls or t -- 单参数时返回类型
-  elseif not obj_cls then
-    return t == cls -- 兼容 Lua 基本类型
-  end
-
-  local classes = obj_cls.__mro
-
-  for i = 1, classes.n do
-    if cls == classes[i] then
-      return true
-    end
-  end
-
-  return false
-end
-
-
+class_NS.class = class
+class_NS.super = super
+class_NS.isinstance = isinstance
 
 -- 导出组
 luaclass.__export = {
@@ -242,6 +233,5 @@ luaclass.__export = {
   super      = super;
   isinstance = isinstance;
 }
-
 
 return luaclass
