@@ -3,14 +3,14 @@
 
 
 -- 合并基类的 MRO
-local function mergeMROs(cls, bases)
+return function (cls, bases)
   if not bases or not bases[1] then
     return {cls, n = 1, lv = {1, n = 1}}
   end
 
-  local mro                      = {cls} -- 结果MRO
-  local mroLength                = 1     -- 结果MRO长度
-  local mroLengthEachLevels      = {1}   -- 结果MRO的每一层长度
+  local mro                      = {cls}  -- 结果MRO
+  local mroLength                = 1      -- 结果MRO长度
+  local mroLengthEachLevels      = {1}    -- 结果MRO的每一层长度
 
   local baseCount                = #bases -- 基类数量
   local baseMROs                 = {}     -- 各基类的MRO
@@ -18,9 +18,9 @@ local function mergeMROs(cls, bases)
   local MROsNextIndextoMerge     = {}     -- 各基类MRO的合并进度
   local baseMROsLengthEachLevels = {}     -- 储存每个基类的MRO中每一层长度的二维表
 
-  local maxDepth                 = 0  -- 最大继承深度
-  local seenClassesPos           = {} -- 合并过程中已出现过的类位置
-  local minConflictPos           = 0  -- 最小冲突位置
+  local maxDepth                 = 0      -- 最大继承深度
+  local seenClassesPos           = {}     -- 合并过程中已出现过的类位置
+  local minConflictPos           = 0      -- 最小冲突位置
 
   --[[
     最小冲突位置, 动态更新, 冲突位置大于这个值就向后归并, 但不得小于这个值
@@ -94,16 +94,16 @@ local function mergeMROs(cls, bases)
               其中 B -> C -> B 是允许的, 尽管B重复了, 但可以合并, 不影响单调性
               这时候记录 minConflictPos = 2, 也就是第一个B的位置, 然后后面就不能再出现2之前的类了
               处理到最后面的A的时候, 发现它已经出现过, 并且 currClassSeenPos = 1, 所以A是不允许的
-              直观的理解就是：前面的 A -> B 和后面的 B -> A 冲突了, 违反了单调性原则
+              直观的理解就是：前面的 A -> B 和后面的 B -> A 冲突了, 无法确认A和B哪个在前哪个在后
             ]]
             if currClassSeenPos < minConflictPos then -- 发生错误
 
               -- 放弃合并, 收集信息, 构造错误提示
               local errMsg = "Cannot create class '%s' due to MRO conflict. (in bases: %s, %s)\n"
-                           .."Processing traceback:\n"
-                           .."    [ %s ]\n"
-                           .."    interrupt at MRO of superclass '%s', level #%s"
-              
+                          .. "Processing traceback:\n"
+                          .. "    [ %s ]\n"
+                          .. "    interrupt at MRO of superclass '%s', level #%d\n"
+
               local tostring, concat = _G.tostring, _G.table.concat
 
               local lastConflictPos   = minConflictPos      -- 上一个冲突位置
@@ -129,7 +129,7 @@ local function mergeMROs(cls, bases)
 
               return nil,
               errMsg:format(
-				cls.__classname,
+                cls.__classname,
                 lastConflictClass,
                 currConflictClass,
                 mergedMROPath,
@@ -153,5 +153,3 @@ local function mergeMROs(cls, bases)
   mro.lv = mroLengthEachLevels -- 记录结果MRO的每一层长度
   return mro
 end
-
-return mergeMROs
