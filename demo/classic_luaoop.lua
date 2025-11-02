@@ -1,6 +1,6 @@
-require "luaclass.Class"
+require "luaclass.Class" -- 需要导入 Class 元类
 
--- 演示: 在 luaclass 中使用经典 LuaOOP 风格的语法
+-- 这个文件演示了如何在 luaclass 中使用经典 LuaOOP 风格的语法
 
 local Person = Class'Person'
 
@@ -21,7 +21,7 @@ p:sayHello() -- 输出: Hello, I am Bob
 class "_G::ChinesePerson"(Person) {
   -- 注: 经典语法不指定命名空间默认是 _G
   -- 而用 luaclass 创建的类命名空间默认是 class
-  
+
   ---@Override
   sayHello = function(self)
     print("你好，我叫"..self.name)

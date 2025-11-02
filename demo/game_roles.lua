@@ -1,5 +1,7 @@
 require "luaclass"
 
+-- 本文件展示命名空间与多继承的综合应用
+
 namespace.new'Game'
 
 _ENV = namespace.use()

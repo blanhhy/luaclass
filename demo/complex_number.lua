@@ -1,5 +1,7 @@
 require "luaclass"
 
+-- 这个文件中演示各种运算符重载
+
 -- 定义一个复数类
 class "_G::Complex" {
 
@@ -17,16 +19,16 @@ class "_G::Complex" {
       return Complex(a.real + b, a.imag) -- 复数加实数
     end
   end;
-  
+
   __sub = function(a, b)
     local opst = -b
     return a + opst
   end;
-  
+
   __unm = function(self)
     return Complex(-a.real, -a.imag)
   end;
-  
+
   __mul = function(a, b)
     local num_type = luaclass(b)
     if num_type == Complex then

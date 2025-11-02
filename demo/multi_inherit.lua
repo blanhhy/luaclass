@@ -1,6 +1,10 @@
 require "luaclass"
 require "tablex"
 
+-- 本文件演示多继承的具体用法, 边界情况, 以及一些错误的用法
+
+--------
+
 local _ENV = namespace.use()
 using 'class'
 using '_G'
