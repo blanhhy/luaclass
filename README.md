@@ -1,130 +1,148 @@
-Change to [Engnish](https://github.com/blanhhy/luaclass/blob/main/README_en.md)
-
 # Luaclass
 
-**Luaclass** 是一个为 Lua 提供面向对象编程（OOP）支持的模块，旨在通过实现类继承、方法查找等 OOP 特性，轻量而直观地引入面向对象的编程范式。该模块允许创建类、继承基类，并灵活地管理类的属性和方法，所有功能都以一种开发者熟悉的语法进行封装。
+这是一个为 Lua 提供基于类的面向对象编程（Class-based OOP）支持的模块，旨在让 Lua 面向对象编程变得更加简单、优雅，同时功能强大。
 
-## 特性
+## 安装 & 导入
 
-- **类创建**：通过 `class()` 方法轻松定义类，并管理继承关系，也可以通过动态调用来创建类。
-- **继承与覆盖**：支持类继承，允许类从基类继承方法和属性，或重写它们。
-- **超类访问**：通过 `super()` 函数轻松调用超类方法。
-- **自定义初始化**：支持在实例化时通过创建 `__init` 方法进行自定义初始化。
-- **兼容 Lua 元方法**：完全兼容 Lua 原生的元方法，如 `__index`、`__call`、`__tostring` 等。
-- **类似缓存的 `__list` 功能**：列出类的所有属性和方法，类似于 Python 中的 `__dict__`。
+下载模块的主文件夹（[luaclass](https://github.com/blanhhy/luaclass/blob/main/luaclass)）并导入你的 Lua 模块路径。
 
-## 依赖项
+> 如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
 
-本模块依赖于我的另外两个模块。
-
-具体依赖的函数请点击 [这里](https://github.com/blanhhy/luaclass/blob/main/requirement.md) 来查看。
-
-## 安装
-
-只需要下载模块的主文件（[luaclass.lua](https://github.com/blanhhy/luaclass/blob/main/luaclass.lua)）并将其导入到 Lua 项目中来安装 **Luaclass**。
-
-如果你使用 Android 上的 Fusion App2 的话，可以从 [Github 发布页](https://github.com/blanhhy/luaclass/releases) 下载专用版本。
-
-在 Lua 脚本中使用该模块，只需像这样导入：
+在 Lua 脚本中使用该模块：
 
 ```lua
-local luaclass = require("luaclass")
+require "luaclass"
 ```
 
-## 示例
+导入后，模块会自动向 _G 中注入以下内容：
 
-以下是一个基础的使用示例：
+- `luaclass`: metaclass
+- `namespace`: namespacelib
+- `class`: function
+- `super`: function
+- `isinstance`: function
+
+
+## 特性 & 说明
+
+### 1. 快速开始
 
 ```lua
--- 定义一个类 "MyClass"
-local my = class("MyClass")
+require "luaclass"
 
-function hello(self)
-  print("Hello from " .. self.__classname)
-end
+-- 定义一个全局类 MyClass
+class "_G::MyClass" {
+  greet = function(self)
+    print("Hello from "..tostring(luaclass(self)));
+  end;
+}
 
-class.end()
-
--- 创建 "MyClass" 的实例
-local obj = my()
+-- 创建 MyClass 的实例
+local obj = MyClass()
 
 -- 调用方法
-obj:hello()
+obj:greet() --> Hello from MyClass
 ```
 
-或者如果你喜欢的话，也可以这么写：
+### 2. 继承
 
-```lua
--- 定义一个类 "MyClass"
-local my = class("MyClass")
-
-function my:hello()
-  print("Hello from " .. self.__classname)
-end
-
-class.end()
-
--- 创建 "MyClass" 的实例
-local obj = my()
-
--- 调用方法
-obj:hello()
-```
-
-### 继承示例
+要继承基类，只需在类名后插入一个括号，就像是在 Python 中做的那样：
 
 ```lua
 -- 定义一个基类
-local Animal = class("Animal")
-function speak(self)
-  print(self.name .. " makes a sound.")
-end
-class.end()
+class "_G::Animal" {
+  speak = function(self)
+    print(self.name .. " makes a sound.")
+  end;
+}
 
 -- 定义一个子类
-local Dog = class("Dog", Animal)
-function __init(self, name)
-  self.name = name
-end
-function speak(self)
-  print(self.name .. " barks.")
-end
-class.end()
+class "_G::Dog"(Animal) -- 继承 Animal 类
+{
+  __init = function(self, name)
+    self.name = name
+  end;
+  speak = function(self)
+    print(self.name .. " barks.")
+  end;
+}
 
 -- 创建 Dog 类的实例
 local dog = Dog("Buddy")
-dog:speak()  -- 输出: Buddy barks.
+dog:speak() -- 输出: Buddy barks.
 
 -- 调用超类的方法
-super(dog):speak()  -- 输出: Buddy makes a sound.
+super(dog):speak() -- 输出: Buddy makes a sound.
 ```
 
-更多示例请参见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua)。
+### 3. 运算符重载
+
+以下代码创建了一个基础的复数类，并用 `__add` 元方法实现了复数的加法：
+
+```lua
+-- 定义复数类
+class "_G::Complex" {
+  __init = function(self, real, imag)
+    self.real = real
+    self.imag = imag
+  end;
+
+  __add = function(a, b)
+    return Complex(a.real + b.real, a.imag + b.imag)
+  end;
+
+  __tostring = function(self)
+    return ("%d + %di"):format(self.real, self.imag)
+  end;
+}
+
+-- 创建两个复数实例
+local z1 = Complex(1, 2)
+local z2 = Complex(3, 4)
+
+-- 验证复数加法
+print(z1 + z2)  --> 4 + 6i
+```
+
+更多示例代码请参见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo)。
 
 ## 更新日志
 
-### v1.4
-- 统一了超类方法调用语法 (`super(cls_or_obj):method()`)
-- 改进了类创建语法：`local myclass = class("name")` 或 `local myclass = class("name", parent)`
-- 修复了 `super()` 函数的性能问题并改善了缓存机制。
+### v1.7（当前版本）
 
-### v1.3
-- 优化了性能。
-- 修复了与方法查找相关的若干小问题。
+- 更新元类与命名空间相关支持
+- 修复元方法无法继承的问题
+- 优化内部实现逻辑与性能
 
-### v1.0
-- 全面重写了模块，采用了新的面向对象类系统。
-- 增加了 `super` 函数用于调用超类方法。
-- 引入了更优雅的类创建语法 `class()`。
+### v1.6
+
+- 再次更新语法，新的语法更加清新可读
+- 优化了类的创建逻辑，弃用了原来切换环境的方案，并提高内部代码复用性
+- 为 `super` 函数的调用结果加入了缓存机制
+- 现在发生单调性冲突时，会拒绝创建类
+- 新增了 `isinstance` 函数
+
+### v1.5
+
+- 加入 `MRO` 机制，全面支持多继承
+- `__list` 方法被暂时废弃，后续更新会重新加入
 
 详细更新请查阅 [更新日志](https://github.com/blanhhy/luaclass/blob/main/changelog.md)。
 
-## 即将到来的功能
+## 可能的新功能
 
+<<<<<<< HEAD
 - **延迟实例化**：支持延迟实例化类实例。
 - **高级缓存**：像 Python 的 `__dict__` 一样缓存类的属性。
 - **class 文件**：支持从lua文件中导入class。
+=======
+更新构想，不代表一定会实现
+>>>>>>> main
 
-## 贡献
+- **__list缓存**：动态缓存缓存类的属性和方法，方便调试。
+- **私有成员**: 引入一个私有成员的储存机制，增强对象封装性。
+- **继承基本类**: 允许继承 Lua 基本类型。
 
-欢迎 Fork 本仓库并提交 Pull Request。如果你在使用时发现任何 bug 或问题，请在仓库中提交 issue 告诉我。
+## 反馈
+
+如果你在测试/使用的过程中发现任何问题，请提交 issue 告知我
