@@ -3,14 +3,48 @@
 
 local mergeMROs = require("luaclass.mergemros")
 local namespace = require("luaclass.namespace")
+local NULL = require("luaclass.NULL")
 
 local _G, type, next, select, rawget, rawset, setmetatable
     = _G, type, next, select, rawget, rawset, setmetatable
 
+-- 类的实例化
 local function new_instance(cls, ...)
-  local inst = cls:__new(...)
+  local inst = cls:__new(...) -- 调用构造函数
+  local declared, decl_count
+
+  -- 类是否使用声明模式
+  if cls.declare then
+    declared, decl_count = {}, 0
+    for k, v in next, cls do
+      if NULL.isNull[v] then
+        declared[decl_count + 1] = k
+        decl_count = decl_count + 1
+      end
+    end
+  end
+
+  -- 如果有初始化函数，调用它
   local init = cls.__init
   if init then init(inst, ...) end
+
+  -- 在声明模式下, 检查是否有未初始化字段以及类型匹配
+  if declared then
+    local field, value -- 字段名和初始化后的值
+    for i = 1, decl_count do
+      field = declared[i]
+      value = rawget(inst, field)
+      if nil == value then
+        _G.error(("Uninitialized declared field '%s' in instance of class '%s'")
+          :format(field.. ": " ..cls[field].type, cls.__ns_name.. "::" ..cls.__classname), 2)
+      end
+      if not cls[field].checkType(value) then
+        _G.error(("Initializing declared field '%s' with a %s value in instance of class '%s'")
+          :format(field.. ": " ..cls[field].type, type(value), cls.__ns_name.. "::" ..cls.__classname), 2)
+      end
+    end
+  end
+
   return inst
 end
 
@@ -61,6 +95,7 @@ setmetatable(Object, luaclass)
 local class_NS = namespace.new("class", {
   luaclass = luaclass;
   Object   = Object;
+  NULL     = NULL;
 })
 
 
@@ -230,6 +265,7 @@ luaclass.__export = {
   _G;
   luaclass   = luaclass;
   namespace  = namespace;
+  NULL       = NULL;
   class      = class;
   super      = super;
   isinstance = isinstance;
