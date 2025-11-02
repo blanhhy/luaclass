@@ -1,5 +1,7 @@
 local luaclass = require "luaclass"
 
+-- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.Class
+
 local Class
 
 -- 创建一个元类, 用于适配 lua 经典 OOP 语法
