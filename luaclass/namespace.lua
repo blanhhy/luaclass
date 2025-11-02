@@ -103,8 +103,9 @@ local function ns_use()
     
     ns_list.n           = ns_list.n + 1
     ns_list[ns_list.n]  = ns
-    ns_MT.__newindex    = ns_list[1]
-    
+    ns_MT.__newindex    = ns_list[1] -- 新变量保存到主命名空间
+    ns_portal._NS       = ns_portal._NS -- 主命名空间可被查询
+                          or spacename[ns_list[1]]
     return portal
   end
   
@@ -113,7 +114,24 @@ end
 
 
 -- 创建命名空间
-local function ns_new(ns_name, ns)
+local function ns_new(...)
+  local ns_name, ns = ...
+  local nargs = select('#', ...)
+  
+  -- 参数与类型校验
+  if nargs == 0 then
+    error("bad argument #1 to 'namespace.new' (value expected)", 2)
+  end
+  
+  if nargs >= 1 and type(ns_name) ~= "string" then
+    error(("bad argument #1 to 'namespace.new' (string excepetd, got %s).")
+      :format(type(ns_name)), 2)
+  end
+  
+  if nargs >= 2 and type(ns) ~= "table" then
+    error(("bad argument #2 to 'namespace.new' (table excepetd, got %s).")
+      :format(type(ns)), 2)
+  end
 
   -- 基础格式校验, 排除各个环节出现的的空字符串
   if  ns_name             == ''  or
@@ -122,7 +140,7 @@ local function ns_new(ns_name, ns)
       ns_name:find("..", 2, true)
     then
       error(("bad name of namespace '%s', null dir name included.")
-        :format(ns_name))
+        :format(ns_name), 2)
   end
 
   -- 已经存在同名命名空间
@@ -131,11 +149,9 @@ local function ns_new(ns_name, ns)
       :format(ns_name), 2)
   end
 
-  ns = ns or {} -- 空表作为默认值
-
   -- 禁止同一个命名空间拥有多个名称
   -- 如果要使用别名, 正确的做法是 local alias = namespace.path.to.YourNamespace
-  if spacename[ns] then
+  if ns and spacename[ns] then
     error(("mutiple definition of namespace '%s', already defined as '%s'.")
       :format(ns_name, spacename[ns]), 2)
   end
@@ -148,6 +164,7 @@ local function ns_new(ns_name, ns)
         :format(ns_name), 2)
     end
 
+    ns = ns or {} -- 空表作为默认值
     namespace[ns_name] = ns
     spacename[ns] = ns_name
     return ns
@@ -165,7 +182,17 @@ local function ns_new(ns_name, ns)
       error(("bad name of namespace '%s', identifier excepetd.")
         :format(ns_shortname), 2)
     end
+    
+    -- 已经存在同名变量
+    -- 如果是表而且参数没有提供表就直接采用
+    -- 如果参数已经提供和已有变量不一样就报错
+    local exist_var = rawget(base_ns, ns_shortname)
+    if ns and nil ~= exist_var and ns ~= exist_var then
+	  error(("conflict definition of namespace '%s', already defined as a %s value.")
+        :format(ns_shortname, type(exist_var)), 2)
+    end
 
+    ns = ns or (type(exist_var) == "table" and exist_var) or {}
     rawset(base_ns, ns_shortname, ns) -- 嵌入当前命名空间
 
     namespace[ns_name] = ns
