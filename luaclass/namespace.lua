@@ -1,4 +1,4 @@
--- 
+--
 -- 命名空间管理器
 
 -- 这个 namespace 原本是为 luaclass 设计的, 但不与之耦合
@@ -6,7 +6,7 @@
 
 local _M
 local _G = _G -- Lua 的全局命名空间
-local type, next, rawset, getmetatable, setmetatable = _G.type, _G.next, _G.rawset, _G.getmetatable, _G.setmetatable
+local type, next, rawset, setmetatable = _G.type, _G.next, _G.rawset, _G.setmetatable
 
 local namespace = {_G = _G}     -- 根命名空间容器
 local spacename = {[_G] = "_G"} -- 命名空间名称映射
@@ -86,7 +86,7 @@ end
 
 -- 使用命名空间, 返回一个用作 _ENV 的表
 local function ns_use()
-  
+
   local ns_list   = {n=0} -- 要使用的命名空间列表
   local ns_portal = {     -- 命名空间访问入口
 	["$list"]  = ns_list;
@@ -95,12 +95,12 @@ local function ns_use()
 	__index       = ns_get_val;
 	__newindex    = disallow;
   }
-  
+
   -- 定义 using 函数
   function ns_portal.using(ns)
     ns = ns and (namespace[ns]or(spacename[ns]and(ns)or(nil)))
     if not ns then error("using nothing!", 2) end
-    
+
     ns_list.n           = ns_list.n + 1
     ns_list[ns_list.n]  = ns
     ns_MT.__newindex    = ns_list[1] -- 新变量保存到主命名空间
@@ -108,7 +108,7 @@ local function ns_use()
                           or spacename[ns_list[1]]
     return portal
   end
-  
+
   return setmetatable(ns_portal, ns_MT)
 end
 
@@ -117,17 +117,17 @@ end
 local function ns_new(...)
   local ns_name, ns = ...
   local nargs = select('#', ...)
-  
+
   -- 参数与类型校验
   if nargs == 0 then
     error("bad argument #1 to 'namespace.new' (value expected)", 2)
   end
-  
+
   if nargs >= 1 and type(ns_name) ~= "string" then
     error(("bad argument #1 to 'namespace.new' (string excepetd, got %s).")
       :format(type(ns_name)), 2)
   end
-  
+
   if nargs >= 2 and type(ns) ~= "table" then
     error(("bad argument #2 to 'namespace.new' (table excepetd, got %s).")
       :format(type(ns)), 2)
@@ -182,13 +182,13 @@ local function ns_new(...)
       error(("bad name of namespace '%s', identifier excepetd.")
         :format(ns_shortname), 2)
     end
-    
+
     -- 已经存在同名变量
     -- 如果是表而且参数没有提供表就直接采用
     -- 如果参数已经提供和已有变量不一样就报错
     local exist_var = rawget(base_ns, ns_shortname)
     if ns and nil ~= exist_var and ns ~= exist_var then
-	  error(("conflict definition of namespace '%s', already defined as a %s value.")
+      error(("conflict definition of namespace '%s', already defined as a %s value.")
         :format(ns_shortname, type(exist_var)), 2)
     end
 
