@@ -51,7 +51,7 @@ class "_G::Tank" {
     end;
 
     __tostring = function(self)
-        return "Tank(".. self.name.. ", HP:" .. self.health.. ", AR:" .. self.armor.. ", DMG:" .. self.damage.. ")";
+        return string.format("Tank(%s, HP:%d, AR:%d, DMG:%d)", self.name, self.health, self.armor, self.damage);
     end;
 }
 
