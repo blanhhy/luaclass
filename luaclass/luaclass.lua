@@ -5,8 +5,8 @@ local mergeMROs = require("luaclass.mergemros")
 local namespace = require("luaclass.namespace")
 local NULL = require("luaclass.NULL")
 
-local _G, type, next, select, rawget, rawset, setmetatable
-    = _G, type, next, select, rawget, rawset, setmetatable
+local _G, type, next, select, rawget, setmetatable
+    = _G, type, next, select, rawget, setmetatable
 
 -- 类的实例化
 local function new_instance(cls, ...)
@@ -66,7 +66,7 @@ end
 local luaclass = {
   __classname  = "luaclass";
   __ns_name    = "class";
-  __tostring   = function(self) return self.__classname end;
+  __tostring   = function(self) return self.__classname or "<Anonymous Class>" end;
   __call       = new_instance;
 } -- 基本元类
 

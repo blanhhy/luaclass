@@ -37,7 +37,7 @@ class "_G::Tank" {
 
 		local damage = self.damage - target.armor // 10;
 		damage = damage > 1 and damage or 1;
-		
+
         target.health = target.health - damage;
         print("Tank " .. self.name .. " attacks " .. target.name .. " for " .. damage .. " damage!");
     end;
@@ -49,6 +49,12 @@ class "_G::Tank" {
             print("Heal amount is not a number!");
             return;
         end;
+
+        --[[
+        说到isinstance有必要讲一下, 有的人可能喜欢用obj:isInstanceOf(cls)来调用,
+        这个方法继承自Object类, 和isinstance其实是同一个函数,
+        但这样要求obj本身是一个luaclass的对象, 因此isinstance能应对更多的情况.
+        ]]
 
         self.health = self.health + amount;
         print("Tank " .. self.name .. " heals for " .. amount .. " health!");
