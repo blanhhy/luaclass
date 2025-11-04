@@ -20,8 +20,8 @@ local function new_instance(cls, ...)
       if NULL.isNull[v] then
         declared[decl_count + 1] = k
         decl_count = decl_count + 1
-      end
     end
+      end
   end
 
   -- 如果有初始化函数，调用它
@@ -53,7 +53,7 @@ local function isinstance(obj, cls)
   local obj_cls = typ == "table" and obj.__class
 
   if not cls then return obj_cls or typ end -- 单参数时返回类型
-  if not obj_cls then return typ == cls end -- Lua 基本类型兼容
+  if not obj_cls then return typ == cls or "any" == cls end -- Lua 基本类型兼容
 
   local mro = obj_cls.__mro
 
@@ -66,7 +66,7 @@ end
 local luaclass = {
   __classname  = "luaclass";
   __ns_name    = "class";
-  __tostring   = function(self) return self.__classname or "<Anonymous Class>" end;
+  __tostring   = function(self) return self.__classname or "<anonymous>" end;
   __call       = new_instance;
 } -- 基本元类
 

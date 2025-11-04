@@ -35,7 +35,7 @@ class "_G::Tank" {
             return;
         end;
 
-		local damage = self.damage - target.armor // 10;
+		local damage = self.damage - math.floor(target.armor/10);
 		damage = damage > 1 and damage or 1;
 
         target.health = target.health - damage;
@@ -66,8 +66,8 @@ class "_G::Tank" {
 }
 
 
-t1 = Tank("T1", 100, 50, 10);
-t2 = Tank("T2", 100, 50, 10);
+local t1 = Tank("T1", 100, 50, 10);
+local t2 = Tank("T2", 100, 50, 10);
 
 t1:attack(t2);
 t2:attack(t1);
@@ -90,6 +90,10 @@ print(t2);
 -- 类型错误的例子
 t1:attack("T2"); -- 错误: 目标不是一个Tank对象
 local t3 = Tank("T3", 100, 50, '10'); -- 错误: 攻击力不是数字类型
+-- 没有类型检查的话, 这么定义不会报错
+-- 即使参与运算, 也不会报错, 因为有隐式转换, 但是比较时就会报错
+-- 这会导致早期的根本的错因被掩盖, 日后添加代码的时候明明逻辑是对的却报错了, 就很憋屈
+
 
 -- 输出:
 --[[
