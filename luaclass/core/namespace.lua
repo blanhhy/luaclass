@@ -28,6 +28,7 @@ local function prequire(name)
   if ok then
     namespace[name] = lib
     spacename[lib]  = name
+    protected[lib]  = true
   end
   return lib
 end
@@ -95,11 +96,12 @@ local function ns_use()
 
   local ns_list   = {n=0} -- 要使用的命名空间列表
   local ns_portal = {     -- 命名空间访问入口
-	["$list"]  = ns_list;
+    ["$list"]     = ns_list;
+    namespace     = _M;   -- 访问本模块
   }
   local ns_MT     = {     -- 命名空间入口的元表
-	__index       = ns_get_val;
-	__newindex    = disallow;
+    __index       = ns_get_val;
+    __newindex    = disallow;
   }
 
   -- 定义 using 函数
@@ -171,8 +173,10 @@ local function ns_new(...)
     end
 
     ns = ns or {} -- 空表作为默认值
+
     namespace[ns_name] = ns
     spacename[ns] = ns_name
+
     return ns
   end
 
@@ -203,6 +207,7 @@ local function ns_new(...)
 
     namespace[ns_name] = ns
     spacename[ns] = ns_name
+
     return ns
   end
 
