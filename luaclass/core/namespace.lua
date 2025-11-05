@@ -12,9 +12,15 @@ local namespace = {_G = _G}     -- 根命名空间容器
 local spacename = {[_G] = "_G"} -- 命名空间名称映射
 local protected = {_G = true}   -- 禁止删除的命名空间
 
+local weaken = _G.require "luaclass.share.weaktb"
+weaken(spacename, 'k')
+weaken(protected, 'k')
+
+--[[ -- 通用逻辑: 
 local weak_MT = {__mode = 'k'}
 setmetatable(spacename, weak_MT)
 setmetatable(protected, weak_MT)
+]]
 
 -- 尝试注册一些 Lua 标准库
 local function prequire(name)
@@ -259,8 +265,11 @@ _M = setmetatable({
   get  = ns_get;
   find = ns_find;
   iter = ns_next;
-  unicode = not not (load or loadstring) -- 是否允许 unicode 字符
-    ("local 〇=0"); -- 默认取决于解释器的实际实现, 可以修改
+  
+  -- 是否允许 unicode 字符
+  -- 默认取决于解释器的实际实现, 可以修改
+  unicode = not not (load or loadstring)("local 〇=0");
+  
 }, {
   __index = namespace;
   __call = function (_, ns_name)

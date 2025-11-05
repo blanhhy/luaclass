@@ -7,10 +7,10 @@ class "_G::Tank" {
     declare = true; -- 开启声明模式
 
     -- 声明一些字段
-    name = NULL.string; -- 坦克名字, 类型为string
-    health = NULL.number; -- 坦克血量, 类型为number
-    armor = NULL.number; -- 坦克护甲, 类型为number
-    damage = NULL.number; -- 坦克攻击力, 类型为number
+    name = decl.string; -- 坦克名字, 类型为string
+    health = decl.number; -- 坦克血量, 类型为number
+    armor = decl.number; -- 坦克护甲, 类型为number
+    damage = decl.number; -- 坦克攻击力, 类型为number
 
     --[[
     即使不开启声明模式, 也可以用NULL占位符声明字段, 但是在开启声明模式后:

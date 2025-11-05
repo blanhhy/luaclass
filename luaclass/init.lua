@@ -1,5 +1,6 @@
 -- luaclass 导入助手，已适配 packagex 标准
-local _M = require "luaclass.luaclass"
+local _M = require "luaclass.main"
+
 local packagex = package.loaded.packagex
 
 if packagex and packagex.inited then

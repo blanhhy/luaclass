@@ -1,52 +1,14 @@
 --
 -- Luaclass 纯lua的基于类OOP机制
 
-local mergeMROs = require("luaclass.mergemros")
-local namespace = require("luaclass.namespace")
-local NULL = require("luaclass.NULL")
-
 local _G, type, next, select, rawget, setmetatable
     = _G, type, next, select, rawget, setmetatable
 
--- 类的实例化
-local function new_instance(cls, ...)
-  local inst = cls:__new(...) -- 调用构造函数
-  local declared, decl_count
+local mergeMROs = _G.require("luaclass.inherit.mro")
+local fromsuper = _G.require("luaclass.inherit.index")
+local namespace = _G.require("luaclass.core.namespace")
+local declare   = _G.require("luaclass.core.declare")
 
-  -- 类是否使用声明模式
-  if cls.declare then
-    declared, decl_count = {}, 0
-    for k, v in next, cls do
-      if NULL.isNull[v] then
-        declared[decl_count + 1] = k
-        decl_count = decl_count + 1
-    end
-      end
-  end
-
-  -- 如果有初始化函数，调用它
-  local init = cls.__init
-  if init then init(inst, ...) end
-
-  -- 在声明模式下, 检查是否有未初始化字段以及类型匹配
-  if declared then
-    local field, value -- 字段名和初始化后的值
-    for i = 1, decl_count do
-      field = declared[i]
-      value = rawget(inst, field)
-      if nil == value then
-        _G.error(("Uninitialized declared field '%s' in instance of class '%s'")
-          :format(field.. ": " ..cls[field].type, cls.__ns_name.. "::" ..cls.__classname), 2)
-      end
-      if not cls[field].checkType(value) then
-        _G.error(("Initializing declared field '%s' with a %s value in instance of class '%s'")
-          :format(field.. ": " ..cls[field].type, type(value), cls.__ns_name.. "::" ..cls.__classname), 2)
-      end
-    end
-  end
-
-  return inst
-end
 
 local function isinstance(obj, cls)
   local typ = type(obj)
@@ -63,11 +25,52 @@ local function isinstance(obj, cls)
   return false
 end
 
+-- 类的实例化
+local function new_instance(cls, ...)
+  local inst = cls:__new(...) -- 调用构造函数
+  local declared, decl_count
+
+  -- 类是否使用声明模式
+  if cls.declare then
+    declared, decl_count = {}, 0
+    for k, v in next, cls do
+      if declare.type[v] then
+        declared[decl_count + 1] = k
+        decl_count = decl_count + 1
+      end
+    end
+  end
+  
+  -- 如果有初始化函数，调用它
+  local init = cls.__init
+  if init then init(inst, ...) end
+
+  -- 在声明模式下, 检查是否有未初始化字段以及类型匹配
+  if declared then
+    local field, value -- 字段名和初始化后的值
+    for i = 1, decl_count do
+      field = declared[i]
+      value = rawget(inst, field)
+      if nil == value then
+        _G.error(("Uninitialized declared field '%s' in instance of class '%s'")
+          :format(field.. ": " ..declare.type[cls[field]], cls.__ns_name.. "::" ..cls.__classname), 2)
+      end
+      if not isinstance(value, declare.type[cls[field]]) then
+        _G.error(("Initializing declared field '%s' with a %s value in instance of class '%s'")
+          :format(field.. ": " ..declare.type[cls[field]], isinstance(value), cls.__ns_name.. "::" ..cls.__classname), 2)
+      end
+    end
+  end
+
+  return inst
+end
+
 local luaclass = {
   __classname  = "luaclass";
   __ns_name    = "class";
   __tostring   = function(self) return self.__classname or "<anonymous>" end;
   __call       = new_instance;
+  __index      = fromsuper;
 } -- 基本元类
 
 local Object   = {
@@ -89,26 +92,23 @@ Object.__class   = luaclass
 setmetatable(luaclass, luaclass)
 setmetatable(Object, luaclass)
 
+declare.typedef(luaclass, "luaclass")
+declare.typedef(Object, "Object")
+
 
 -- 所有类的默认命名空间
 -- 如果创建时不指定命名空间, 默认添加到这里
-local class_NS = namespace.new("class", {
+local class_NS = namespace.new(
+"class", {
   luaclass = luaclass;
   Object   = Object;
-  NULL     = NULL;
+  
+  isinstance = isinstance;
+  namespace  = namespace;
+  decl       = declare;
+  
+  std = _G;
 })
-
-
--- 依据MRO查找属性和方法
-local function lookup(self, name)
-  local mro = self.__mro
-  for i = 2, mro.n do
-    local item = rawget(mro[i], name)
-    if item then return item end
-  end
-end
-
-luaclass.__index = lookup
 
 
 local mm_names = {
@@ -187,56 +187,6 @@ end
 
 
 
--- 拦截并重定向成员访问
-local interceptor = {
-  __index = function(cache, k)
-    local cls = cache[2] -- 访问者代表的子类
-    local spueritem = lookup(cls, k) -- 寻找超类成员
-
-    -- 如果查找不到，抛出一个错误
-    if not spueritem then
-      _G.error(("No attribute or method \"%s\" existing in %s's superclass."):format(k, cls.__classname), 2)
-    end
-
-    -- 如果找到一个方法，构造闭包
-    if type(spueritem) == "function" then
-      local function closure(obj, ...)
-        if obj == cache then -- 重定向访问者
-          return spueritem(cache[1], ...)
-        end
-        return spueritem(obj, ...)
-      end
-      cache[k] = closure -- 缓存这个闭包
-      return closure
-    end
-
-    return superitem -- 如果找到一个属性，直接返回
-  end
-}
-
-
--- 缓存 super 调用结果
-local supercache = setmetatable({}, {
-  __mode = 'k', -- 弱键模式，对象销毁时清理缓存
-  __index = function(self, obj)
-    local cache = setmetatable({obj,
-      rawget(obj, "__classname") and obj or obj.__class
-    }, interceptor)
-    self[obj] = cache
-    return cache
-  end
-})
-
-
--- 以当前身份访问超类的属性或方法
-local function super(obj)
-  if not obj then
-    local _, arg1 = _G.debug.getlocal(2, 1) -- 如果没有传入类或者对象，尝试获取函数第一参数
-    obj = arg1 or _G.error("Failed to find any class.", 2) -- 如果没有，抛出一个错误
-  end
-  return supercache[obj]
-end
-
 
 -- 类创建器，用于处理语法
 local function class(name, bases)
@@ -255,20 +205,4 @@ local function class(name, bases)
   end
 end
 
-
-class_NS.class = class
-class_NS.super = super
-class_NS.isinstance = isinstance
-
--- 导出组
-luaclass.__export = {
-  _G;
-  luaclass   = luaclass;
-  namespace  = namespace;
-  NULL       = NULL;
-  class      = class;
-  super      = super;
-  isinstance = isinstance;
-}
-
-return luaclass
+return class

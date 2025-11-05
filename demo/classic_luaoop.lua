@@ -1,4 +1,5 @@
-require "luaclass.Class" -- 需要导入 Class 元类
+require "luaclass"
+require "luaclass.utils.Class" -- 需要导入 Class 元类
 
 -- 这个文件演示了如何在 luaclass 中使用经典 LuaOOP 风格的语法
 
