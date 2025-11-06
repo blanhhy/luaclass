@@ -14,14 +14,14 @@ class "Game.Math::Point" {
   __init = function(self, x, y)
     self.x, self.y = x or 0, y or 0
   end;
-  
+
   -- 只定义了本文件中用到的方法, 其他方法暂略
-  
+
   __add = function(A, B)
     assert(isinstance(B, Math.Point), ("%s不能和%s相加!"):format(A:getClass(), luaclass(B)))
     return Math.Point(A.x + B.x, A.y + B.y)
   end;
-  
+
   __tostring = function(self)
     return ("(%d, %d)"):format(self.x, self.y)
   end
@@ -57,7 +57,8 @@ class "Game::CombatUnit" {
 -- 玩家角色类（多继承）
 class "Game::Player" (GameObject, CombatUnit) {
   __init = function(self, name, hp)
-    super(self):__init(name)  -- 调用GameObject的初始化
+    GameObject.__init(self, name) -- 有时候, 需要显式指定需要的父类
+    -- super(self):__init(name) -- 也可以使用super(self):__init(name)
     self.hp = hp or 100
     self.damage = 10
   end;

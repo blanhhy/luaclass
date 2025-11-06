@@ -7,9 +7,9 @@ class "_G::Tank" {
     declare = true; -- 开启声明模式
 
     -- 声明一些字段
-    name = decl.string; -- 坦克名字, 类型为string
+    name   = decl.string; -- 坦克名字, 类型为string
     health = decl.number; -- 坦克血量, 类型为number
-    armor = decl.number; -- 坦克护甲, 类型为number
+    armor  = decl.number; -- 坦克护甲, 类型为number
     damage = decl.number; -- 坦克攻击力, 类型为number
 
     --[[
@@ -21,9 +21,9 @@ class "_G::Tank" {
     __init = function(self, name, health, armor, damage)
         -- 由于开启了声明模式, 这里并不需要类型检查
         -- 但是实际应用中可以根据具体需求妥善的处理空值和类型错误, 比如设置默认值
-        self.name = name;
+        self.name   = name;
         self.health = health;
-        self.armor = armor;
+        self.armor  = armor;
         self.damage = damage;
     end;
 

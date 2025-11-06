@@ -6,8 +6,8 @@ require "luaclass"
 class "_G::Complex" {
 
   __init = function(self, real, imag)
-    self.real = real
-    self.imag = imag
+    self.real = real or 0
+    self.imag = imag or 0
   end;
 
   -- 运算符重载
@@ -15,7 +15,7 @@ class "_G::Complex" {
     local num_type = luaclass(b)
     if num_type == Complex then
       return Complex(a.real + b.real, a.imag + b.imag) -- 复数相加
-     elseif num_type == "number" then
+    elseif num_type == "number" then
       return Complex(a.real + b, a.imag) -- 复数加实数
     end
   end;
@@ -33,7 +33,7 @@ class "_G::Complex" {
     local num_type = luaclass(b)
     if num_type == Complex then
       return Complex(a.real*b.real - a.imag*b.imag, a.real*b.imag + a.imag*b.real)
-     elseif num_type == "number" then
+    elseif num_type == "number" then
       return Complex(a.real * b, a.imag * b)
     end
   end;
@@ -43,9 +43,9 @@ class "_G::Complex" {
     local imag = self.imag
     if imag > 0 then
       return ("%d + %di"):format(self.real, imag)
-     elseif imag < 0 then
+    elseif imag < 0 then
       return ("%d - %di"):format(self.real, -imag)
-     else
+    else
       return tostring(self.real)
     end
   end
