@@ -5,7 +5,6 @@
 -- 提供统一的, 带类型的空值占位符, 用于模拟声明变量
 
 local _G = _G
-local type = _G.type
 local weaken = _G.require "luaclass.share.weaktb"
 
 local str, num, bool, func, tbl, used, co, any;
@@ -43,7 +42,7 @@ local types = weaken({
 
 return _G.setmetatable({
   type = types;
-  T = function(t)return(phs[t])end;
+  T = function(t)return(phs[t])end; -- 方便取用非变量名的key, eg: decl.T'Math::Vector3'
   typedef = function(typ, name)
     local ph = function()end
     phs[name] = ph
