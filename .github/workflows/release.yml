@@ -14,7 +14,7 @@ permissions:
 
 # 需要打包的内容：
 # 1. luaclass/ 文件夹下的所有内容
-# 2. .release/ 文件夹下的所有内容
+# 2. .fa/ 文件夹下的所有内容
 # 3. README.md 文件
 
 # 当前的tag作为release的名字以及tag
@@ -44,8 +44,7 @@ jobs:
           version="${GITHUB_REF#refs/tags/}"
           echo "Preparing release for version: $version"
 
-          # Extract changelog section between '### <version>' and the next '### v' heading
-          # If not found, release_body will be empty
+          # 提取 changelog.md 中的内容作为 release body
           release_body_file="release_body.txt"
           awk -v ver="$version" '
             BEGIN{found=0}
@@ -58,11 +57,16 @@ jobs:
           tmpdir="package_tmp"
           rm -rf "$tmpdir"
           mkdir -p "$tmpdir"
-          if [ -d "luaclass" ]; then
-            cp -r luaclass "$tmpdir/" || true
+
+          # 复制必要的文件到临时目录
+          src_dir="luaclass"  # 源文件目录
+          fa_config_dir=".fa"  # FA模块配置文件目录
+
+          if [ -d "$src_dir" ]; then
+            cp -r "$src_dir"/* "$tmpdir/" || true
           fi
-          if [ -d ".release" ]; then
-            cp -r .release "$tmpdir/" || true
+          if [ -d "$fa_config_dir" ]; then
+            cp -r "$fa_config_dir"/* "$tmpdir/" || true
           fi
           if [ -f README.md ]; then
             cp README.md "$tmpdir/" || true
