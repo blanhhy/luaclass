@@ -17,7 +17,9 @@ require "luaclass"
 导入后，模块会自动向 _G 中注入以下内容：
 
 - `luaclass`: metaclass
+- `Object`: rootclass
 - `namespace`: namespacelib
+- `decl`: function
 - `class`: function
 - `super`: function
 - `isinstance`: function
