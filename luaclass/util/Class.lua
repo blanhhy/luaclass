@@ -1,6 +1,6 @@
 assert(luaclass, "luaclass required!")
 
--- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.Class
+-- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.util.*
 
 local Class
 

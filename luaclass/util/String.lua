@@ -1,3 +1,6 @@
+--
+-- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.util.*
+
 local _G = _G
 local String = _G.getmetatable('')
 

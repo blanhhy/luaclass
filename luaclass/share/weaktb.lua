@@ -1,3 +1,6 @@
+--
+-- 模块全局共享的弱表元表, 防止创建多个内容相同的表
+
 local setmt = setmetatable
 
 local weak_k  = {__mode='k'}

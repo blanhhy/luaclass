@@ -3,22 +3,40 @@ require "luaclass"
 -- 本文件展示命名空间与多继承的综合应用
 
 namespace.new'Game'
+namespace.new'Game.Math'
 
 _ENV = namespace.use()
 using'Game'
 using'_G'
 
+-- 游戏地图中的点
+class "Game.Math::Point" {
+  __init = function(self, x, y)
+    self.x, self.y = x or 0, y or 0
+  end;
+  
+  -- 只定义了本文件中用到的方法, 其他方法暂略
+  
+  __add = function(A, B)
+    assert(isinstance(B, Math.Point), ("%s不能和%s相加!"):format(A:getClass(), luaclass(B)))
+    return Math.Point(A.x + B.x, A.y + B.y)
+  end;
+  
+  __tostring = function(self)
+    return ("(%d, %d)"):format(self.x, self.y)
+  end
+}
+
 -- 基础游戏对象类
 class "Game::GameObject" {
   __init = function(self, name)
     self.name = name
-    self.position = {x=0, y=0}
+    self.position = Math.Point(0, 0)
   end;
 
   move = function(self, dx, dy)
-    self.position.x = self.position.x + dx
-    self.position.y = self.position.y + dy
-    print(("%s移动到位置(%d, %d)"):format(self.name, self.position.x, self.position.y))
+    self.position = self.position + Math.Point(dx, dy)
+    print(("%s移动到位置%s"):format(self.name, self.position))
   end;
 }
 
@@ -59,11 +77,11 @@ class "Game::Weapon" {
   end;
 }
 
+
+
 -- 创建游戏对象
 local sword = Weapon("圣剑", 15)
 local hero = Player("勇者", 150)
-
-
 
 -- 使用功能
 hero:move(5, 3)    --> 玩家特殊移动

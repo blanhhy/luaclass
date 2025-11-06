@@ -13,7 +13,7 @@ class "_G::Tank" {
     damage = decl.number; -- 坦克攻击力, 类型为number
 
     --[[
-    即使不开启声明模式, 也可以用NULL占位符声明字段, 但是在开启声明模式后:
+    即使不开启声明模式, 也可以声明字段, 但是在开启声明模式后:
     1. 声明的字段必须在构造函数中初始化为非nil值, 否则会报错.
     2. 声明的字段类型必须与初始化的值类型一致, 否则会报错.
     ]]
@@ -52,7 +52,7 @@ class "_G::Tank" {
 
         --[[
         说到isinstance有必要讲一下, 有的人可能喜欢用obj:isInstanceOf(cls)来调用,
-        这个方法继承自Object类, 和isinstance其实是同一个函数,
+        这个方法继承自Object类, 和isinstance其实是同一个函数, 一般情况下每个类都一样
         但这样要求obj本身是一个luaclass的对象, 因此isinstance能应对更多的情况.
         ]]
 

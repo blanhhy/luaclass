@@ -140,7 +140,7 @@ function luaclass.__new(mcls, ...)
 
   -- 获取在名字中指定的命名空间
   local ns_name, name = name:match("^([^:]-):*([^:]+)$")
-  ns_name = ns_name and (ns_name ~= '' and ns_name or 'class')
+  ns_name = ns_name and (ns_name ~= '' and ns_name or 'class') or 'class'
 
   local cls = {
     __classname = name;
