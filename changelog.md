@@ -1,18 +1,39 @@
-### v1.7
+### v1.8
+
 **Changelog**:
+
+- 使用完整，独立的命名空间管理模块，带来全新理念
+- 现在类定义时要在类名中指定命名空间，否则隐式指定为 `class::YourClass`
+- 新增带类型的声明占位符，可增加自定义类型
+- 新增声明模式，检查字段是否正确初始化为声明的类型
+- 新增 `Object` 基类，提供 `getClass` `isInstanceOf` `toString` 方法
+- 项目结构优化，拆分文件职能，内部细节优化
+- 附加可选的经典语法适配类 `Class` 和字符串适配类 `String`
+- 新增一些demo代码，配有详细的注释
+- 修复一些已知问题
+
+-------
+
+**Full Changelog**: <https://github.com/blanhhy/luaclass/compare/v1.7...v1.8>
+
+### v1.7
+
+**Changelog**:
+
 - 新增支持创建时指定元类 `metaclass = yourMcls;` 和命名空间 `namespace = yourNs;`
 - 元类特性与 Python 对齐
 - 修复元方法无法被继承的问题
 - 不再支持 `class.Name {}` 语法，请一律使用 `class "Name" {}`
 - 弃用依赖，适配 `packagex`
 
-detail: https://github.com/blanhhy/luaclass/commit/7293ea7b74241eb35a37c4b5e10e6aa879f3ab70, https://github.com/blanhhy/luaclass/commit/19f4657ffc57cdb845c2282a262d1f3ada741fd7
+detail: <https://github.com/blanhhy/luaclass/commit/7293ea7b74241eb35a37c4b5e10e6aa879f3ab70>, <https://github.com/blanhhy/luaclass/commit/19f4657ffc57cdb845c2282a262d1f3ada741fd7>
 
 -------
 
-**Full Changelog**: https://github.com/blanhhy/luaclass/compare/v1.6...v1.7
+**Full Changelog**: <https://github.com/blanhhy/luaclass/compare/v1.6...v1.7>
 
 >化繁为简
+>
 >1. 新增元类与命名空间相关支持
 （加入 __new 方法与 _Registry 设计）
 >2. 简化了许多代码逻辑
@@ -20,6 +41,7 @@ detail: https://github.com/blanhhy/luaclass/commit/7293ea7b74241eb35a37c4b5e10e6
 >4. 优化了性能
 
 >Fix some issues
+>
 >1. 修复长期以来一直没发现的元方法无法继承的问题
 >（目前的解决方法是计算完 MRO 后复制所有子类中没有但超类有的元方法）
 >2. 修复持续几个版本的错误地分配了元类方法的问题
@@ -29,24 +51,25 @@ detail: https://github.com/blanhhy/luaclass/commit/7293ea7b74241eb35a37c4b5e10e6
 >5. 新增了一个关于游戏角色的测试脚本
 >6. 其他小改动
 
-
-
 ### v1.6
-**Changelog**:
-* 全面支持多继承，可以通过 `A.__mro` 来查看继承链
-* 改进了类的创建语法，新的语法有一点像 C++ ，先用一行 `class "A"` 或 `class.A` 声明一个类，再用一个表 `{ xxx = ooo; }` 描述类中的成员
-（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
-* 提供一个新的 `isinstance` 函数，作用和 Python 中的类似
-* 删除了 `__list` 方法
 
-**detail**: https://github.com/blanhhy/luaclass/commit/5b927a23b973ee7177913060e86cf547021de6c6
+**Changelog**:
+
+- 全面支持多继承，可以通过 `A.__mro` 来查看继承链
+- 改进了类的创建语法，新的语法有一点像 C++ ，先用一行 `class "A"` 或 `class.A` 声明一个类，再用一个表 `{ xxx = ooo; }` 描述类中的成员
+（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
+- 提供一个新的 `isinstance` 函数，作用和 Python 中的类似
+- 删除了 `__list` 方法
+
+**detail**: <https://github.com/blanhhy/luaclass/commit/5b927a23b973ee7177913060e86cf547021de6c6>
 
 -------
 
 **Full Changelog**:
-https://github.com/blanhhy/luaclass/compare/v1.4...v1.6
+<https://github.com/blanhhy/luaclass/compare/v1.4...v1.6>
 
 >大更新
+>
 >1. 关于 compute_mro 函数
 >
 >　新增 MRO 机制以支持多继承，现在类的 __superclass 属性是一个包含所有直接超类的序列，而 MRO 会存储在 __mro 属性中
@@ -89,49 +112,50 @@ https://github.com/blanhhy/luaclass/compare/v1.4...v1.6
 >
 >　新增依赖 unifuncex 中的 table.tostring 函数，用于抛出错误时打印 MRO 处理过程
 
-
-
 ### v1.4
+
 **Changelog**:
-* 统一了子类和超类方法的调用语法（类似于`super(cls_or_obj):method()` ）
-* 优化了创建类的语法，现在开始创建类的语句类似于`local myclass = class "name"` 或`local myclass = class("name", parent)` ，结束语句统一为`class.end() `
+
+- 统一了子类和超类方法的调用语法（类似于`super(cls_or_obj):method()` ）
+- 优化了创建类的语法，现在开始创建类的语句类似于`local myclass = class "name"` 或`local myclass = class("name", parent)` ，结束语句统一为`class.end() `
 （详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
-* 重写撰写了FA2模块介绍中`examplelist` 部分
+- 重写撰写了FA2模块介绍中`examplelist` 部分
 
 -------
 
-**Full Changelog**:https://github.com/blanhhy/luaclass/compare/v1.3...v1.4
+**Full Changelog**:<https://github.com/blanhhy/luaclass/compare/v1.3...v1.4>
 
 >改进了语法
+>
 >1. 将super函数的调用语法调整至和普通的table（以及其他的类或者对象）一致，贴合lua原生的使用体验
 >2. 调整了class函数的逻辑，将赋值、命名、绑定超类的操作全部放在创建类的开头，创建结束后只需写下class.end()，更加符合人类直觉
 
-
-
 ### v1.3
+
 **Changelog**:
 
-* 改进了性能
+- 改进了性能
 
-**detail**: https://github.com/blanhhy/luaclass/commit/de1265bd80cd4e09a259ea0163ae40fcd508aeec
+**detail**: <https://github.com/blanhhy/luaclass/commit/de1265bd80cd4e09a259ea0163ae40fcd508aeec>
 
 -------
 
-**Full Changelog**: https://github.com/blanhhy/luaclass/compare/v1.0...v1.3
+**Full Changelog**: <https://github.com/blanhhy/luaclass/compare/v1.0...v1.3>
 
 >主要的改动包括：
+>
 >1. 现在对象的类会保存在对象内部的__class属性中，这样查找类或超类的属性和方法就无需访获取元表了
 >2. 将super函数中的拦截器table独立出来，而后续使用则依靠super函数向拦截器中添加参数，从而不再需要每次创建新的拦截器
 >3. 把一些反复使用的字符串加到了局部变量当中以提升访问性能
 
-
-
 ### v1.0
+
 **Changelog**:
-* 采用全新的实现方式，彻底重写了整个模块
-* 兼容Lua原生的元方法
-* 使用新的`unifuncex` 与`luaset` 模块（见 [requirement](https://github.com/blanhhy/luaclass/blob/main/requirement.md) ）
-* 现在`super` 函数既可以指定对象或类调用，也可以在类的方法中直接调用（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
-* 更加优雅的类创建语法，只需用两个`class()` 替代创建普通表（table）时的`{ }` 即可（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
-* 现在可以直接调用本模块来动态创建一个类（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
-* 移除了`print` 方法，取而代之的是`__list` 方法，返回一个集合（concrete set）
+
+- 采用全新的实现方式，彻底重写了整个模块
+- 兼容Lua原生的元方法
+- 使用新的`unifuncex` 与`luaset` 模块（见 [requirement](https://github.com/blanhhy/luaclass/blob/main/requirement.md) ）
+- 现在`super` 函数既可以指定对象或类调用，也可以在类的方法中直接调用（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
+- 更加优雅的类创建语法，只需用两个`class()` 替代创建普通表（table）时的`{ }` 即可（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
+- 现在可以直接调用本模块来动态创建一个类（详见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo.lua) ）
+- 移除了`print` 方法，取而代之的是`__list` 方法，返回一个集合（concrete set）
