@@ -114,7 +114,7 @@ local function ns_use()
     ns_MT.__newindex    = ns_list[1] -- 新变量保存到主命名空间
     ns_portal._NS       = ns_portal._NS -- 主命名空间可被查询
                           or spacename[ns_list[1]]
-    return portal
+    return ns_portal
   end
 
   return setmetatable(ns_portal, ns_MT)
