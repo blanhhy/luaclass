@@ -107,6 +107,47 @@ print(z1 + z2)  --> 4 + 6i
 
 更多示例代码请参见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo)。
 
+## 项目结构
+
+```txt
+[repo:luaclass]
+├── luaclass/
+│   ├── core/
+│   │   ├── class.lua
+│   │   ├── namespace.lua
+│   │   └── checktool.lua
+│   ├── inherit/
+│   │   ├── index.lua
+│   │   ├── super.lua
+│   │   ├── mro.lua
+│   │   └── isinstance.lua
+│   ├── share/
+│   │   ├── declare.lua
+│   │   └── weaktb.lua
+│   ├── util/
+│   │   ├── Class.lua
+│   │   └── String.lua
+│   ├── main.lua
+│   └── init.lua
+├── demo/
+│   ├── complex_number.lua
+│   ├── multi_inherit.lua
+│   ├── game_roles.lua
+│   ├── use_namespace.lua
+│   ├── classic_luaoop.lua
+│   ├── type_checking.lua
+│   └── abstract_class.lua
+├── README.md
+└── changelog.md
+```
+
+1. `core`：核心模块，包含类定义、基类、元类、命名空间、声明、抽象类、类型检查等功能。
+2. `inherit`：继承相关模块，包含索引、超类调用、MRO、isinstance等功能。
+3. `share`：模块级共享模块，包含声明、弱表等功能。
+4. `util`：提供给用户的可选工具类。
+5. `main.lua`：主入口文件，整理了所有模块的接口。
+6. `init.lua`：初始化文件，将模块接口导入到全局环境。
+
 ## 更新日志
 
 ### v1.8
