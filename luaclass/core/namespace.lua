@@ -16,7 +16,7 @@ local weaken = _G.require "luaclass.share.weaktb"
 weaken(spacename, 'k')
 weaken(protected, 'k')
 
---[[ -- 通用逻辑: 
+--[[ -- 通用逻辑:
 local weak_MT = {__mode = 'k'}
 setmetatable(spacename, weak_MT)
 setmetatable(protected, weak_MT)
@@ -270,11 +270,11 @@ _M = setmetatable({
   get  = ns_get;
   find = ns_find;
   iter = ns_next;
-  
+
   -- 是否允许 unicode 字符
   -- 默认取决于解释器的实际实现, 可以修改
   unicode = not not (load or loadstring)("local 〇=0");
-  
+
 }, {
   __index = namespace;
   __call = function (_, ns_name)

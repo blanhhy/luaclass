@@ -4,27 +4,15 @@
 local _G, type, next, select, rawget, setmetatable
     = _G, type, next, select, rawget, setmetatable
 
-local mergeMROs = _G.require("luaclass.inherit.mro")
-local fromsuper = _G.require("luaclass.inherit.index")
-local namespace = _G.require("luaclass.core.namespace")
-local declare   = _G.require("luaclass.core.declare")
+local require = _G.require
 
+local isinstance = require("luaclass.inherit.isinstance")
+local mergeMROs  = require("luaclass.inherit.mro")
+local fromsuper  = require("luaclass.inherit.index")
+local namespace  = require("luaclass.core.namespace")
+local checktool  = require("luaclass.core.checktool")
+local declare    = require("luaclass.share.declare")
 
--- 判断或获取所属类型
-local function isinstance(obj, cls)
-  local typ = type(obj)
-  local obj_cls = typ == "table" and obj.__class
-
-  if not cls then return obj_cls or typ end -- 单参数时返回类型
-  if not obj_cls then return typ == cls or "any" == cls end -- Lua 基本类型兼容
-
-  local mro = obj_cls.__mro
-
-  for i = 1, mro.n do
-    if cls == mro[i] then return true end -- 认为子类实例也是基类类型
-  end
-  return false
-end
 
 -- 类的实例化
 local function new_instance(cls, ...)
@@ -41,20 +29,8 @@ local function new_instance(cls, ...)
 
   -- 如果声明了字段, 检查是否正确初始化
   if cls.declare then
-    local declared = cls.__declared -- 所有声明字段
-    local decltype = declare.type -- 获取声明类型
-    local value
-    for field, decl in next, declared do
-      value = inst[field]
-      if nil == value then
-        _G.error(("Uninitialized declared field '%s' in instance of class '%s'")
-          :format(field.. ": " ..decltype[decl], cls.__classsgin), 2)
-      end
-      if not isinstance(value, decltype[decl]) then
-        _G.error(("Initializing declared field '%s' with a %s value in instance of class '%s'")
-          :format(field.. ": " ..decltype[decl], isinstance(value), cls.__classsgin), 2)
-      end
-    end
+    local ok, err = checktool.isInitialized(cls, inst)
+    if not ok then _G.error(err, 2) end
   end
 
   return inst
@@ -159,8 +135,8 @@ function luaclass:__new(...)
       cls[k] = v
     end
   end
-  
-  local as_abc = cls.abstract
+
+  local as_abc = cls.abstract -- 是否作为抽象类创建
 
   -- 计算MRO
   local mro, err = mergeMROs(cls, bases)
@@ -180,23 +156,12 @@ function luaclass:__new(...)
       cls[mm_name] = base_mm
     end
   end
-  
+
   -- 如果基类抽象而子类不抽象
   -- 检查子类是否实现了所有的方法, 否则无法创建类
   if not as_abc and nil ~= cls.abstract then
-    local abms, method
-    for i = 1, #bases do
-      abms = bases[i].__abstract_methods
-      if abms then
-        for j = 1, #abms do
-          method = cls[abms[j]]
-          if method == declare.method or type(method) ~= "function" then
-            _G.error(("class '%s' is not abstract and does not override abstract method '%s'")
-              :format(cls.__classsgin, abms[j]), 3)
-          end
-        end
-      end
-    end
+    local ok, err = checktool.isImplemented(cls, bases)
+    if not ok then _G.error(err, 3) end
     cls.abstract = false
   end
 
@@ -208,28 +173,6 @@ function luaclass:__new(...)
 end
 
 
--- 辅助函数: 获取声明字段
-local function getDeclared(clstb, bases)
-  local declared = {}
-  
-  if bases then
-    for i = 1, #bases do
-      if bases[i].__declared then
-        for k, v in next, bases[i].__declared do
-          declared[k] = v
-        end
-      end
-    end
-  end
-  
-  for k, v in next, clstb do
-    if declare.type[v] then
-      declared[k] = v
-    end
-  end
-  
-  return declared
-end
 
 
 -- 类创建器，用于处理语法
@@ -244,21 +187,15 @@ local function class(name, bases)
 
     local mcls = clstb.metaclass or luaclass -- 支持指定元类，默认 luaclass
     clstb.metaclass = nil
-    
+
     -- 声明模式记录静态声明的字段
     if clstb.declare then
-      clstb.__declared = getDeclared(clstb, bases)
+      clstb.__declared = checktool.getDeclared(clstb, bases)
     end
-    
+
     -- 抽象类记录抽象方法
     if clstb.abstract then
-      clstb.__declared = clstb.__declared or getDeclared(clstb, bases)
-      local abms = {}
-      local method = declare.method
-      for k, v in next, clstb.__declared do
-        if v == method then abms[#abms + 1] = k end
-      end
-      clstb.__abstract_methods = abms
+      clstb.__abstract_methods = checktool.getAbstractMethods(clstb, bases)
     end
 
     return mcls(name, bases, clstb) -- 调用元类创建类

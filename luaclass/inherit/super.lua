@@ -1,7 +1,8 @@
+local index = require "luaclass.inherit.index"
+
 local _G, type, rawget, setmetatable
     = _G, type, rawget, setmetatable
 
-local index = _G.require "luaclass.inherit.index"
 
 -- 拦截并重定向成员访问
 local interceptor = {
@@ -47,7 +48,7 @@ local debug = not not _G.debug
 local function super(obj)
   if not obj then
     local _, self
-    if debug then _, self = _G.debug.getlocal(2, 1) end -- 如果没有传入类或者对象，尝试获取函数第一参数
+    if _G.debug then _, self = _G.debug.getlocal(2, 1) end -- 如果没有传入类或者对象，尝试获取函数第一参数
     obj = self or _G.error("Failed to find any class.", 2) -- 如果没有，抛出一个错误
   end
   return supercache[obj]

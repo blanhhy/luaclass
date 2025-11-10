@@ -1,4 +1,4 @@
-local namespace = require "luaclass.namespace"
+local namespace = require "luaclass.core.namespace"
 
 -- 本文件演示一般情况下命名空间的用法, 这里没有引入 luaclass 库
 

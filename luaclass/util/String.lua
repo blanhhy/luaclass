@@ -10,8 +10,8 @@ local _M = _G.require("luaclass.main")
 
 local luaclass = _M.luaclass
 local Object   = _M.Object
-local type     = _G.type
 local tostring = _G.tostring
+-- local type     = _G.type
 
 local stringlib = _G.string or _G.require("string")
 String.__index  = stringlib
@@ -30,7 +30,7 @@ end
 
 local next = _G.next
 for k, v in next, stringlib do
-  String[k] = v
+	String[k] = v
 end
 
 

@@ -1,6 +1,7 @@
---
+-- luaclass/inherit/mro.lua
 -- This file is a part of luaclass library.
 
+local _G = _G
 
 -- 合并基类的 MRO
 return function (cls, bases)
