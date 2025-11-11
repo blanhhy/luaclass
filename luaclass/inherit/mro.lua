@@ -3,6 +3,12 @@
 
 local _G = _G
 
+--[[
+分块线性化算法（Block Linearization Algorithm）
+广度优先, 尊重基类声明顺序, 保持单调性
+具体来说, 就是将每个基类的 MRO 按层级进行分块, 然后逐层合并这些分块
+]]
+
 -- 合并基类的 MRO
 return function (cls, bases)
   if not bases or not bases[1] then
