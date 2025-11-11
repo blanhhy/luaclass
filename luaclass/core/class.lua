@@ -67,8 +67,10 @@ Object.__class   = luaclass
 setmetatable(luaclass, luaclass)
 setmetatable(Object, luaclass)
 
-declare.typedef(luaclass, "luaclass")
-declare.typedef(Object, "Object")
+local typedef = declare.typedef
+
+typedef(luaclass, "luaclass")
+typedef(Object, "Object")
 
 
 -- 所有类的默认命名空间
@@ -137,6 +139,7 @@ function luaclass:__new(...)
   end
 
   local as_abc = cls.abstract -- 是否作为抽象类创建
+  local as_type = cls.typedef -- 是否作为类型创建
 
   -- 计算MRO
   local mro, err = mergeMROs(cls, bases)
@@ -168,6 +171,13 @@ function luaclass:__new(...)
   -- 注册类到对应的命名空间
   local ns = namespace.get(ns_name)
   ns[name] = cls
+
+  -- 给类声明一个类型名, 可用于以后的字段声明
+  if as_type then
+    local typename = type(as_type) == "string" and as_type or cls.__classsgin
+    typedef(cls, typename)
+    cls.typedef = typename
+  end
 
   return cls
 end

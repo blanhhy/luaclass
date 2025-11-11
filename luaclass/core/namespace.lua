@@ -88,6 +88,7 @@ local function ns_get_val(portal, name)
       return value
     end
   end
+  return namespace[name] -- 允许全名访问其他命名空间
 end
 
 
