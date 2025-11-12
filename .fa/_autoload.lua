@@ -1,2 +1,2 @@
 require "luaclass"
-require "luaclass.Class"
+require "luaclass.util.Class"
