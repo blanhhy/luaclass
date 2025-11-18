@@ -3,7 +3,7 @@ local type = type
 -- 判断或获取所属类型
 local function isinstance(obj, cls)
   local typ = type(obj)
-  local obj_cls = typ == "table" and obj.__class
+  local obj_cls = (typ == "table" or typ == "string") and obj.__class 
 
   if not cls then return obj_cls or typ end -- 单参数时返回类型
   if not obj_cls then return typ == cls or "any" == cls end -- Lua 基本类型兼容

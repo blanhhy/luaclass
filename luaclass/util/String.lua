@@ -19,7 +19,7 @@ String.__index  = stringlib
 String.__classname = "String"
 String.__ns_name   = "_G"
 String.__class     = luaclass
-String.__mro       = {String, Object, n=2, lv={1, 1, n=2}}
+String.__mro       = {String, "string", n=2, lv={1, 1, n=2}}
 
 function String:__new(val)
 	if nil == val then

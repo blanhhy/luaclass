@@ -107,7 +107,7 @@ function luaclass:__new(...)
   if arg_count == 1 then
     local obj = ...
     local typ = type(obj)
-    return typ == "table" and obj.__class or typ
+    return (typ == "table" or typ == "string") and obj.__class or typ
   end
 
   local name, bases, clstb = ...
