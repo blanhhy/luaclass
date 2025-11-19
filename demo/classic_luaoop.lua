@@ -24,11 +24,13 @@ p:sayHello() -- 输出: Hello, I am Bob
 -- 不用担心, 因为不论如何显式指定都是有效的
 
 class "_G::Student"(Person) {
+  ---@Override
   __init = function(self, name, grade)
     super(self):__init(name)
     self.grade = grade
   end;
 
+  ---@Override
   sayHello = function(self)
     print("Hello, I am "..self.name.." and my grade is "..self.grade)
   end;

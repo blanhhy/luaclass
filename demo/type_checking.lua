@@ -4,7 +4,7 @@ require "luaclass"
 
 -- 首先我们定义一个Tank类
 class "_G::Tank" {
-    declare = true; -- 开启声明模式
+    declare = true; -- 开启声明模式'
 
     -- 声明一些字段
     name   = decl.string; -- 坦克名字, 类型为string
