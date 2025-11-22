@@ -7,6 +7,7 @@
 local _M
 local _G = _G -- Lua 的全局命名空间
 local type, next, rawset, setmetatable = _G.type, _G.next, _G.rawset, _G.setmetatable
+local setfenv = _G.setfenv
 
 local namespace = {_G = _G}     -- 根命名空间容器
 local spacename = {[_G] = "_G"} -- 命名空间名称映射
@@ -117,6 +118,12 @@ local function ns_use()
     return ns_portal
   end
 
+  -- 适配旧版_ENV机制(常见于luajit)
+  if setfenv then
+    ns_portal._ENV = ns_portal
+    setfenv(2, ns_portal)
+  end
+  
   return setmetatable(ns_portal, ns_MT)
 end
 

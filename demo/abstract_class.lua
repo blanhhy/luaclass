@@ -78,6 +78,8 @@ Sparrow flys.
 
 
 -- 错误示范:
-class "_G::Dog" (Animal) {}
+xpcall(function()
+  class "_G::Dog" (Animal) {}
+end, print)
 -- 报错, 因为Dog类既没有声明为抽象类也没有实现基类的eat和move方法
 -- class '_G::Dog' is not abstract and does not override abstract method 'eat'

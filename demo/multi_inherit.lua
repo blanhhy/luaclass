@@ -76,7 +76,9 @@ table.print(J.__mro) --> { J, E, F, A, B, C, O, Object }
 table.print(K.__mro) --> { K, F, G, B, C, D, O, Object }
 table.print(L.__mro) --> { L, G, H, C, D, A, O, Object }
 
-class "M"(J, K, L) {}
+xpcall(function()
+  class "M"(J, K, L) {}
+end, print)
 --[[
 错误信息:
 Cannot create class 'M' due to MRO conflict. (in bases: D, A)

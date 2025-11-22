@@ -31,8 +31,7 @@ class "_G::Tank" {
 
         -- 这里我们使用isinstance函数进行类型检查
         if not isinstance(target, Tank) then
-            print("Attack target is not a Tank!");
-            return;
+            error "Attack target is not a Tank!";
         end;
 
 		local damage = self.damage - math.floor(target.armor/10);
@@ -46,7 +45,7 @@ class "_G::Tank" {
         -- 这里可以用type, 也可以用isinstance
         -- isinstance是兼容基本类型的, 类型参数传入字符串即可
         if not isinstance(amount, "number") then
-            print("Heal amount is not a number!");
+            error "Heal amount is not a number!";
             return;
         end;
 
@@ -88,20 +87,17 @@ print(t2);
 
 
 -- 类型错误的例子
+xpcall(function()
 t1:attack("T2"); -- 错误: 目标不是一个Tank对象
 local t3 = Tank("T3", 100, 50, '10'); -- 错误: 攻击力不是数字类型
+end, print)
+
+-- 错误信息:
+--[[
+xxx.lua:91: Target is not a Tank!
+xxx.lua:92: Initializing declared field 'damage: number' with a string value in instance of class '_G::Tank'
+]]
+
 -- 没有类型检查的话, 这么定义不会报错
 -- 即使参与运算, 也不会报错, 因为有隐式转换, 但是比较时就会报错
 -- 这会导致早期的根本的错因被掩盖, 日后添加代码的时候明明逻辑是对的却报错了, 就很憋屈
-
-
--- 输出:
---[[
-Target is not a Tank!
-xxx.lua:85: Initializing declared field 'damage: number' with a string value in instance of class '_G::Tank'
-stack traceback:
-	[C]: in function 'error'
-	xxx/luaclass/luaclass.lua:42: in function 'luaclass.__call'
-	xxx.lua:85: in main chunk
-	[C]: in ?
-]]
