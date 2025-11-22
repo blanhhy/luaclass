@@ -22,6 +22,7 @@ local _ENV = namespace.use()
 using(namespace.Game.Deltarune) -- 主命名空间(可读可写)
 using(namespace._G) -- 附加命名空间(只读)
 -- using既可以传入命名空间表对象, 也可以传入命名空间全名, 比如using'_G'和using(namespace._G)是等价的
+-- using返回_ENV本身, 因此也可以链式调用
 
 heros = {}
 
@@ -43,3 +44,9 @@ the third hero in prophecy is a dark prince
 asgore's fullname is asgore dreemurr
 not in _G
 ]]
+
+-- 从命名空间中导入对象(以lua开头, 表示从lua而不是外部导入)
+local sin = require "lua.math.sin"
+local PI = require "lua.math.pi"
+
+print("sin(pi/6) =", sin(PI/6)) -- sin(pi/6) = 0.5
