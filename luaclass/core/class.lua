@@ -18,7 +18,7 @@ local declare    = require("luaclass.share.declare")
 local function new_instance(cls, ...)
 
   -- 抽象类不能实例化！
-  if cls.abstract then
+  if rawget(cls, "abstract") then
     _G.error(("Cannot instantiate abstract class '%s'")
       :format(cls.__classsgin), 2)
   end

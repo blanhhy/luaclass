@@ -16,35 +16,35 @@ local tostring = _G.tostring
 local stringlib = _G.string or _G.require("string")
 String.__index  = stringlib
 
+local string_sub = stringlib.sub
+local array_cat  = _G.table.concat
+
+function stringlib:at(idx) return string_sub(self, idx, idx) end
+function stringlib:join(array) return array_cat(array, self) end
+
 String.__classname = "String"
 String.__ns_name   = "_G"
 String.__class     = luaclass
-String.__mro       = {String, "string", n=2, lv={1, 1, n=2}}
+String.__mro       = {String, Object, n=2, lv={1, 1, n=2}}
+String.valueOf     = tostring
 
-function String:__new(val)
-	if nil == val then
-		_G.error("Initializing a String value with a nil value.", 3)
+---@Override
+function String.__new(_, val)
+	if nil == val then return '' end
+	local cls = luaclass(val)
+	if cls == String or cls == "string" then return val end
+	if cls == "table" and val[1] then
+		return '{'..array_cat(val, ', ')..'}'
 	end
 	return tostring(val)
 end
 
-local next = _G.next
-for k, v in next, stringlib do
-	String[k] = v
-end
+for k, v in _G.next, stringlib do String[k] = v end
 
-
+-- 必要的实例字段和方法
 stringlib.__class      = String
 stringlib.isInstanceOf = _M.isinstance
 stringlib.getClass     = Object.getClass
-stringlib.toString     = _G.tostring
-
-local string_sub = stringlib.sub
-
-function stringlib:at(idx)
-	return string_sub(self, idx, idx)
-end
-
 
 _G.setmetatable(String, luaclass)
 _G.rawset(_G, "String", String)

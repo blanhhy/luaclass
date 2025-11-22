@@ -47,7 +47,6 @@ prequire("ffi")
 prequire("jit")
 
 
-
 -- 辅助函数：检查合法标识符
 local keywords = {
   "and", "break", "do", "else", "elseif", "end", "false", "for",
@@ -57,7 +56,7 @@ local keywords = {
 
 local function check_identifier(str)
   if str == '' then return false end -- 不能为空
-  if str:match(_M.unidode and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
+  if str:match(_M.unicode and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
   if str:match("^%d") then return false end -- 首字符不能是数字
 
   -- 不能是保留词
@@ -261,6 +260,23 @@ local function ns_next(_, ns_name)
   return next(namespace, ns_name)
 end
 
+
+-- 从命名空间中导入对象
+local function import_from_ns(modname)
+  if modname:sub(1, 4) ~= "lua." then return nil end -- 不满足触发格式
+  
+  local ns_name, modname = modname:match("lua%.(.+)%.(.+)")
+  if not ns_name or not modname then return nil end -- 格式错误
+  
+  local ns = namespace[ns_name]
+  local obj = ns and ns[modname]
+  if not ns then return ("no namespace '%s'"):format(ns_name) end
+  if nil == obj then return ("no object '%s' in namespace '%s'"):format(modname, ns_name) end
+  
+  return function() return obj end
+end
+
+table.insert(package.searchers or package.loaders, import_from_ns)
 
 
 -- 导出接口
