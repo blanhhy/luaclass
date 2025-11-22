@@ -89,13 +89,16 @@ print(t2);
 -- 类型错误的例子
 xpcall(function()
 t1:attack("T2"); -- 错误: 目标不是一个Tank对象
-local t3 = Tank("T3", 100, 50, '10'); -- 错误: 攻击力不是数字类型
+end, print)
+
+xpcall(function()
+t3 = Tank("T3", 100, 50, '10'); -- 错误: 攻击力不是数字类型
 end, print)
 
 -- 错误信息:
 --[[
-xxx.lua:91: Target is not a Tank!
-xxx.lua:92: Initializing declared field 'damage: number' with a string value in instance of class '_G::Tank'
+xxx.lua:34: Target is not a Tank!
+xxx.lua:95: Initializing declared field 'damage: number' with a string value in instance of class '_G::Tank'
 ]]
 
 -- 没有类型检查的话, 这么定义不会报错
