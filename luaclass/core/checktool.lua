@@ -10,6 +10,7 @@ local function getDeclared(clstb, bases)
   -- 合并所有基类的声明
   if bases then
     for i = 1, #bases do
+      if not bases[i] then break end
       if bases[i].__declared then
         for k, v in next, bases[i].__declared do
           declared[k] = v
@@ -47,12 +48,12 @@ local function isInitialized(cls, inst)
   for field, decl in next, declared do
     value = inst[field]
     if nil == value then -- 未初始化
-      return false, ("Uninitialized declared field '%s' in instance of class '%s'")
-        :format(field .. ": " .. decltype[decl], cls.__classsgin)
+      return false, ("Uninitialized declared field '%s: %s' in instance of class '%s'")
+        :format(field, decltype[decl], cls.__classsgin)
     end
     if not isinstance(value, decltype[decl]) then -- 类型不匹配
-      return false, ("Initializing declared field '%s' with a %s value in instance of class '%s'")
-        :format(field .. ": " .. decltype[decl], isinstance(value), cls.__classsgin)
+      return false, ("Initializing declared field '%s: %s' with a %s value in instance of class '%s'")
+        :format(field, decltype[decl], isinstance(value), cls.__classsgin)
     end
   end
   return true
@@ -62,6 +63,7 @@ end
 local function isImplemented(cls, bases)
   local abms, method
   for i = 1, #bases do
+    if not bases[i] then break end
     abms = bases[i].__abstract_methods
     if abms then
       for j = 1, #abms do

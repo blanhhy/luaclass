@@ -44,7 +44,6 @@ local luaclass = {
   __tostring   = function(self) return self.__classname or "<anonymous>" end;
   __call       = new_instance;
   __index      = fromsuper;
---__newindex   = reflect;
 } -- 基本元类
 
 local Object   = {
@@ -117,13 +116,17 @@ function luaclass:__new(...)
   end
 
   -- 获取在名字中指定的命名空间
-  local ns_name, name = name:match("^([^:]-):*([^:]+)$")
-  ns_name = ns_name and (ns_name ~= '' and ns_name or 'class') or 'class'
+  local classsgin = name
+  local ns_name, name = name:match("^([^:]-)::([^:]+)$")
+  local ns_setted = ns_name and ns_name ~= '' or false
+
+  ns_name = ns_setted and ns_name or "class"
+  classsgin = ns_setted and classsgin or ns_name.."::".. name
 
   local cls = {
     __classname = name;
     __ns_name   = ns_name;
-    __classsgin = ns_name.. "::".. name;
+    __classsgin = classsgin;
     __class     = mcls;
     __new       = Object.__new; -- 这个方法比较常用
     __tostring  = Object.__tostring;
@@ -139,7 +142,7 @@ function luaclass:__new(...)
   end
 
   local as_abc = cls.abstract -- 是否作为抽象类创建
-  local as_type = cls.typedef -- 是否作为类型创建
+  local as_type = cls.typedef -- 是否作为可声明的类型创建
 
   -- 计算MRO
   local mro, err = mergeMROs(cls, bases)
@@ -172,9 +175,9 @@ function luaclass:__new(...)
   local ns = namespace.get(ns_name)
   ns[name] = cls
 
-  -- 给类声明一个类型名, 可用于以后的字段声明
+  -- 给类定义一个类型名, 可用于以后的字段声明
   if as_type then
-    local typename = type(as_type) == "string" and as_type or cls.__classsgin
+    local typename = type(as_type) == "string" and as_type or classsgin
     typedef(cls, typename)
     cls.typedef = typename
   end
@@ -190,9 +193,10 @@ local function class(name, bases)
   return function(clstb, ...) -- 捕获成员表
     clstb = clstb or {}
 
-    -- 如果获取到一个类
+    -- 如果获取到的是一个类
     if clstb.__classname then
-      return class(name, {clstb, ...}) -- 捕获基类
+      local firstBase = clstb
+      return class(name, {firstBase, ...}) -- 捕获基类
     end
 
     local mcls = clstb.metaclass or luaclass -- 支持指定元类，默认 luaclass

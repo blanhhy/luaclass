@@ -37,6 +37,7 @@ return function (cls, bases)
   -- 准备工作：从基类中获取各自的MRO和长度，并计算最大继承深度
   for i = 1, baseCount do
     local base = bases[i]
+    if not base then baseCount = i break end
     local baseMRO = base.__mro
 
     -- 获取每个基类的MRO和长度
