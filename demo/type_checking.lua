@@ -98,7 +98,7 @@ end, print)
 -- 错误信息:
 --[[
 xxx.lua:34: Target is not a Tank!
-xxx.lua:95: Initializing declared field 'damage: number' with a string value in instance of class '_G::Tank'
+xxx.lua:95: Initializing field 'Tank.damage' with a string value, number expected
 ]]
 
 -- 没有类型检查的话, 这么定义不会报错

@@ -48,12 +48,12 @@ local function isInitialized(cls, inst)
   for field, decl in next, declared do
     value = inst[field]
     if nil == value then -- 未初始化
-      return false, ("Uninitialized declared field '%s: %s' in instance of class '%s'")
-        :format(field, decltype[decl], cls.__classsgin)
+      return false, ("Uninitialized field '%s.%s', %s value expected")
+        :format(cls, field, decltype[decl])
     end
     if not isinstance(value, decltype[decl]) then -- 类型不匹配
-      return false, ("Initializing declared field '%s: %s' with a %s value in instance of class '%s'")
-        :format(field, decltype[decl], isinstance(value), cls.__classsgin)
+      return false, ("Initializing field '%s.%s' with a %s value, %s expected")
+        :format(cls, field, isinstance(value), decltype[decl])
     end
   end
   return true
@@ -70,7 +70,7 @@ local function isImplemented(cls, bases)
         method = cls[abms[j]]
         if method == declare.method or type(method) ~= "function" then
           return false, ("class '%s' is not abstract and does not override abstract method '%s'")
-            :format(cls.__classsgin, abms[j])
+            :format(cls, abms[j])
         end
       end
     end
