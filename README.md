@@ -111,6 +111,15 @@ print(z1 + z2)  --> 4 + 6i
 
 ```txt
 [repo:luaclass]
+├── demo/
+│   ├── abstract_class.lua
+│   ├── classic_luaoop.lua
+│   ├── complex_number.lua
+│   ├── game_roles.lua
+│   ├── multi_inherit.lua
+│   ├── type_checking.lua
+│   ├── use_namespace.lua
+│   └── util_String.lua
 ├── luaclass/
 │   ├── core/
 │   │   ├── class.lua
@@ -118,9 +127,9 @@ print(z1 + z2)  --> 4 + 6i
 │   │   └── checktool.lua
 │   ├── inherit/
 │   │   ├── index.lua
-│   │   ├── super.lua
+│   │   ├── isinstance.lua
 │   │   ├── mro.lua
-│   │   └── isinstance.lua
+│   │   └── super.lua
 │   ├── share/
 │   │   ├── declare.lua
 │   │   └── weaktb.lua
@@ -129,14 +138,6 @@ print(z1 + z2)  --> 4 + 6i
 │   │   └── String.lua
 │   ├── main.lua
 │   └── init.lua
-├── demo/
-│   ├── complex_number.lua
-│   ├── multi_inherit.lua
-│   ├── game_roles.lua
-│   ├── use_namespace.lua
-│   ├── classic_luaoop.lua
-│   ├── type_checking.lua
-│   └── abstract_class.lua
 ├── README.md
 └── changelog.md
 ```
