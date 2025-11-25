@@ -13,7 +13,7 @@ Class = class "_G::Class"(luaclass) {
     __new = function(_, name, ...)
 		-- 简单起见, 用 Class() 创建的类默认命名空间 _G, 而不是 class
 		if not name:find(':', 1, true) then
-			name = '_G:' .. name
+			name = '_G::' .. name
 		end
         return luaclass:__new(name, {...})
     end;

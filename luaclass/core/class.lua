@@ -20,7 +20,7 @@ local function new_instance(cls, ...)
   -- 抽象类不能实例化！
   if rawget(cls, "abstract") then
     _G.error(("Cannot instantiate abstract class '%s'")
-      :format(cls.__classsgin), 2)
+      :format(cls), 2)
   end
 
   local inst = cls:__new(...) -- 调用构造函数
@@ -116,17 +116,12 @@ function luaclass:__new(...)
   end
 
   -- 获取在名字中指定的命名空间
-  local classsgin = name
-  local ns_name, name = name:match("^([^:]-)::([^:]+)$")
-  local ns_setted = ns_name and ns_name ~= '' or false
-
-  ns_name = ns_setted and ns_name or "class"
-  classsgin = ns_setted and classsgin or ns_name.."::".. name
-
+  local ns_name, name = name:match("^([^:]-):*([^:]+)$")
+  ns_name = ns_name and ns_name ~= '' and ns_name or "class"
+  
   local cls = {
     __classname = name;
     __ns_name   = ns_name;
-    __classsgin = classsgin;
     __class     = mcls;
     __new       = Object.__new; -- 这个方法比较常用
     __tostring  = Object.__tostring;
@@ -177,7 +172,7 @@ function luaclass:__new(...)
 
   -- 给类定义一个类型名, 可用于以后的字段声明
   if as_type then
-    local typename = type(as_type) == "string" and as_type or classsgin
+    local typename = type(as_type) == "string" and as_type or (ns_name.."::"..name)
     typedef(cls, typename)
     cls.typedef = typename
   end
