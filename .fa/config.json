@@ -2,7 +2,28 @@
   "displayName": "Lua类",
   "name": "luaclass",
   "description": "基于类的面向对象（纯lua版）",
-  "version": 1.8,
+  "version": 1.9,
   "author": "莎兰奈",
-  "exampleList":[]
+  "exampleList":[
+    {
+      "name": "使用class命名空间",
+      "content": "local _ENV=namespace.use()\nusing'class'\n"
+    },
+    {
+      "name": "创建类",
+      "content": "class \"MyClass\" {}"
+    },
+    {
+      "name": "继承类",
+      "content": "_ENV=namespace.use().using'class'\nclass \"MyBaseClass\" {}\nclass \"MySubClass\"(MyBaseClass) {}"
+    },
+    {
+      "name": "super函数",
+      "content": "super(self).method()"
+    },
+    {
+      "name": "isinstance函数",
+      "content": "isinstance(obj, MyClass)"
+    }
+  ]
 }
