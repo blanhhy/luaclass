@@ -122,7 +122,7 @@ function luaclass:__new(...)
   local cls = {
     __classname = name;
     __ns_name   = ns_name;
-    __class     = mcls;
+    __class     = self;
     __new       = Object.__new; -- 这个方法比较常用
     __tostring  = Object.__tostring;
   }

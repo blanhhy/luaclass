@@ -8,23 +8,23 @@ local _G, type, rawget, setmetatable
 local interceptor = {
   __index = function(cache, k)
     local cls = cache[2] -- 访问者代表的子类
-    local spueritem = index(cls, k) -- 寻找超类成员
+    local field = index(cls, k)
 
-    -- 如果查找不到，抛出一个错误
-    if not spueritem then
+    -- 超类中没有这个字段
+    if not field then
       _G.error(("No field or method '%s' existing in superclass of '%s'"):format(k, cls), 2)
     end
 
-    -- 如果找到一个方法，构造闭包
-    if type(spueritem) == "function" then
+    -- 找到一个方法
+    if type(field) == "function" then
       local function closure(obj, ...)
-        return spueritem(obj == cache and cache[1] or obj, ...)
+        return field(obj == cache and cache[1] or obj, ...)
       end
       cache[k] = closure -- 缓存这个闭包
       return closure
     end
 
-    return superitem -- 如果找到一个属性，直接返回
+    return field -- 普通字段直接返回
   end
 }
 
@@ -44,7 +44,7 @@ local supercache = setmetatable({}, {
 
 local debug = not not _G.debug
 
--- 以当前身份访问超类的属性或方法
+-- 以当前身份访问超类字段
 local function super(obj)
   if not obj then
     local _, self
