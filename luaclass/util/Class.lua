@@ -22,7 +22,7 @@ Class = class "_G::Class"(type) {
         local t = rawtype(name)
         if t == "nil" or t == "table" then
             bases = {name, ...}
-            name  = "class.anonymous::Class@"..randstr(10) -- 生成随机类名
+            name  = "class.anonymous::Class_"..randstr(10) -- 生成随机类名
         elseif t == "string" then
             bases = {...}
         end

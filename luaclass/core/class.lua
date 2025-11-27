@@ -12,6 +12,7 @@ local fromsuper  = require("luaclass.inherit.index")
 local namespace  = require("luaclass.core.namespace")
 local checktool  = require("luaclass.core.checktool")
 local declare    = require("luaclass.share.declare")
+local randstr    = require("luaclass.share.randstr")
 
 
 -- 类的实例化
@@ -183,6 +184,11 @@ end
 
 -- 类创建器，用于处理语法
 local function class(name, bases)
+  if not name or name == '' then
+    name = "class.anonymous::Class_"
+        .. randstr(10) -- 匿名类
+  end
+  
   return function(clstb, ...) -- 捕获成员表
     clstb = clstb or {}
 
