@@ -6,14 +6,14 @@ require "luaclass.util.Class"
 -- 需要额外导入 Class 元类
 -- Class 的类签名是 _G::Class(class::luaclass)
 
--- 出于怀旧，便于理解，开发习惯，Lint工具不够强大等等各种原因，
--- Luaclass 提供了这个 Class 工具类，用于模拟 Lua 传统的 OOP
+-- 出于怀旧, 开发习惯, 原理理解, Lint工具不够强大等等各种原因, 
+-- Luaclass 提供了这个 Class 工具类, 用于模拟传统的 OOP 形式
 
 -- 用 Class 创建类
 -- 参数是类名和基类列表 (name?: string, ...?: luaclass)
+-- Class 被设计为不接受定义体, 所以字段只能后续添加
 local Person = Class "Person"
 
--- Class 不接受定义体, 因此需要像传统方式一样手动加字段
 function Person:__init(name)
   self.name = name
 end
@@ -27,6 +27,9 @@ p:sayHello() -- 输出: Hello, I am Bob
 
 
 -- 因为是同一个体系, 所以和 luaclass 风格语法是兼容的
+-- 不过也由于 Class 不接受定义体, 你不能在标准创建器中指定 metaclass = Class;
+-- 即使它确实是一个元类 (如果那样做了定义体被会忽略, 和直接实例化 Class 没有不同)
+
 local Student = -- 用 local 是方便演示, 命名空间访问不是本文的重点
 class "Student"(Person) {
   ---@Override
@@ -41,12 +44,13 @@ class "Student"(Person) {
   end;
 }
 
-local s = Student("Alice", 10)
-s:sayHello() -- 输出: Hello, I am Alice and my grade is 10
+local stu = Student("Alice", 10)
+stu:sayHello()
+-- 输出: Hello, I am Alice and my grade is 10
 
 
 -- 有很多传统的类库没有类名一说, 就靠一个变量名
--- Class也模拟了这种用法, 可以匿名创建, 实际类名将会是一个随机字符串
+-- Class 也模拟了这种用法, 可以匿名创建, 实际类名将会是一个随机字符串
 -- 命名空间则是 class.anonymous, 此命名空间为kv弱表, 不会延长匿名类的生命周期
 
 -- 不带字符串参数 (可以有基类), 匿名创建类
@@ -65,13 +69,14 @@ a:speak() -- 输出: Lion makes a sound.
 
 print(Animal.__classname) -- 输出类似 Class_xxxxxxxxxx
 
-
 -- 注: 标准创建器也可以创建匿名类, name为空串或缺省即可
 -- local clazz = class () {--[[定义体]]}
 
 
+-- Class 一种别具风格的用法:
 -- 其实你还可以这样定义, 视觉上可能会更好
-Class "Book" do
+-- 装作是在一起定义而不是稍后添加, 还能解决不能折叠整个类的问题
+local Book = Class "Book" do
   local _G = namespace._G
   local _ENV = namespace.class.Book
   
@@ -81,7 +86,10 @@ Class "Book" do
   end
   
   function showInfo(self)
-    _G.print(("Name: %s\nDescription: %s")
+    _G.print(("BookName: %s\nDescription: %s")
       :format(self.name, self.desc))
   end
 end
+
+local lldq = Book("流浪地球", "《流浪地球》是刘慈欣的一部科幻小说，讲述了人类为了逃离太阳即将变成红巨星的灾难，决定带着地球离开太阳系，前往比邻星的惊险历程。")
+lldq:showInfo()
