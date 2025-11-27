@@ -1,7 +1,5 @@
 local char = string.char
-local time, clock = os.time, os.clock
 local rand, setseed = math.random, math.randomseed
-local tostring, tonumber = tostring, tonumber
 local concat = table.concat
 
 -- 字符集定义
@@ -28,9 +26,8 @@ local inited = false
 
 -- 初始化种子
 local function initseed()
-  local seed = time()*1e4 -- 秒级时间
-             + clock()*1e6 -- 微秒或纳秒时间
-             + tonumber(tostring(charset):sub(8))
+  local seed = tonumber(tostring(math.floor(os.time()*1e4+os.clock()*1e6)):reverse())
+             * tonumber(tostring(charset):sub(8))
   setseed(seed)
   for _=1,10 do rand() end -- 预热
   inited = true
