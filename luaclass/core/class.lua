@@ -40,7 +40,6 @@ end
 local luaclass = {
   __classname  = "luaclass";
   __ns_name    = "class";
-  __classsgin  = "class::luaclass";
   __tostring   = function(self) return self.__classname or "<anonymous>" end;
   __call       = new_instance;
   __index      = fromsuper;
@@ -49,7 +48,6 @@ local luaclass = {
 local Object   = {
   __classname  = "Object";
   __ns_name    = "class";
-  __classsgin  = "class::Object";
   __tostring   = function(self) return ("<%s object>"):format(self.__class.__classname) end;
   __new        = function(self) return setmetatable({__class = self}, self) end;
   isInstanceOf = isinstance;
@@ -118,7 +116,7 @@ function luaclass:__new(...)
   -- 获取在名字中指定的命名空间
   local ns_name, name = name:match("^([^:]-):*([^:]+)$")
   ns_name = ns_name and ns_name ~= '' and ns_name or "class"
-  
+
   local cls = {
     __classname = name;
     __ns_name   = ns_name;

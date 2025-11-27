@@ -43,9 +43,9 @@ local types = weaken({
 return _G.setmetatable({
   type = types; -- 通过占位符获取类型标志 (字符串或自定义的对象), eg: decl.type[decl.string] -> "string"
   T = function(t)return(phs[t])end; -- 方便取用非变量名的key, eg: decl.T'Math::Vector3'
-  typedef = function(typ, name) -- 声明类型别名, eg: decl.typedef(namespace.class.MyString, 'MyString')
+  typedef = function(cls, name) -- 声明类型别名, eg: decl.typedef(namespace.class.MyString, 'MyString')
     local ph = function()end
     phs[name] = ph
-    types[ph] = typ
+    types[ph] = cls
   end;
 }, {__index=phs})

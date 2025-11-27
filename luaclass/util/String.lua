@@ -11,7 +11,6 @@ local _M = _G.require("luaclass.main")
 local luaclass = _M.luaclass
 local Object   = _M.Object
 local tostring = _G.tostring
--- local type     = _G.type
 
 local stringlib = _G.string or _G.require("string")
 String.__index  = stringlib
@@ -24,6 +23,7 @@ function stringlib:join(array) return array_cat(array, self) end
 
 String.__classname = "String"
 String.__ns_name   = "_G"
+String.typedef     = "string"
 String.__class     = luaclass
 String.__mro       = {String, Object, n=2, lv={1, 1, n=2}}
 String.valueOf     = tostring
@@ -48,5 +48,6 @@ stringlib.getClass     = Object.getClass
 
 _G.setmetatable(String, luaclass)
 _G.rawset(_G, "String", String)
+_M.decl.typedef(String, "string") -- 取代原来的string
 
 return String

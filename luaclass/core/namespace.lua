@@ -123,7 +123,7 @@ local function ns_use()
     ns_portal._ENV = ns_portal
     setfenv(2, ns_portal)
   end
-  
+
   return setmetatable(ns_portal, ns_MT)
 end
 
@@ -271,15 +271,15 @@ end
 -- 从命名空间中导入对象
 local function import_from_ns(modname)
   if modname:sub(1, 4) ~= "lua." then return nil end -- 不满足触发格式
-  
+
   local ns_name, modname = modname:match("lua%.(.+)%.(.+)")
   if not ns_name or not modname then return nil end -- 格式错误
-  
+
   local ns = namespace[ns_name]
   local obj = ns and ns[modname]
   if not ns then return ("no namespace '%s'"):format(ns_name) end
   if nil == obj then return ("no object '%s' in namespace '%s'"):format(modname, ns_name) end
-  
+
   return function() return obj end
 end
 
@@ -294,6 +294,7 @@ _M = setmetatable({
   get  = ns_get;
   find = ns_find;
   iter = ns_next;
+  load = import_from_ns;
 
   -- 是否允许 unicode 字符
   -- 默认取决于解释器的实际实现, 可以修改
