@@ -85,6 +85,10 @@ local class_NS = namespace.new(
   std = _G;
 })
 
+-- 匿名类命名空间
+-- kv 弱表, 避免影响垃圾回收
+namespace.new("class.anonymous", weaken({}, 'kv'))
+
 
 local mm_names = {
   "__add", "__sub", "__mul", "__div", "__idiv", "__mod", "__pow",
