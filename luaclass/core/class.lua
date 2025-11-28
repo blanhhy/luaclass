@@ -12,6 +12,7 @@ local fromsuper  = require("luaclass.inherit.index")
 local namespace  = require("luaclass.core.namespace")
 local checktool  = require("luaclass.core.checktool")
 local declare    = require("luaclass.share.declare")
+local weaken    = require("luaclass.share.weaktb")
 local randstr    = require("luaclass.share.randstr")
 
 
