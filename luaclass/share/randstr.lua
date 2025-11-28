@@ -7,17 +7,17 @@ local charset = {}
 local char_count = 0
 
 -- 0-9
-for i = 48, 57 do 
+for i = 48, 57 do
   char_count = char_count + 1
   charset[char_count] = char(i)
 end
 -- A-Z
-for i = 65, 90 do 
+for i = 65, 90 do
   char_count = char_count + 1
   charset[char_count] = char(i)
 end
 -- a-z
-for i = 97, 122 do 
+for i = 97, 122 do
   char_count = char_count + 1
   charset[char_count] = char(i)
 end
@@ -27,7 +27,7 @@ local inited = false
 -- 初始化种子
 local function initseed()
   local seed = tonumber(tostring(math.floor(os.time()*1e4+os.clock()*1e6)):reverse())
-             * tonumber(tostring(charset):sub(8))
+             * tonumber("0x"..tostring(charset):sub(10))
   setseed(seed)
   for _=1,10 do rand() end -- 预热
   inited = true
