@@ -77,7 +77,9 @@ print(Animal.__classname) -- 输出类似 Class_xxxxxxxxxx
 -- Class 一种别具风格的用法:
 -- 装作是在一起定义而不是稍后添加
 -- 视觉上可能更好, 还能解决不能折叠整个类的问题
--- 注意，_ENV块级作用域在 lua5.2 以后才适用, luajit 里不能这么写
+-- 注意，_ENV块级作用域在 lua5.2 以后才适用, luajit 里不能用这种写法
+xpcall(function()
+
 local Book = Class "Book" do
   local _G = namespace._G
   local _ENV = namespace.class.Book
@@ -95,3 +97,5 @@ end
 
 local lldq = Book("流浪地球", "《流浪地球》是刘慈欣的一部科幻小说，讲述了人类为了逃离太阳即将变成红巨星的灾难，决定带着地球离开太阳系，前往比邻星的惊险历程。")
 lldq:showInfo()
+
+end, function() print "Lua5.2以上适用" end)
