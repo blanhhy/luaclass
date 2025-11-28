@@ -30,6 +30,7 @@ p:sayHello() -- 输出: Hello, I am Bob
 -- 不过也由于 Class 不接受定义体, 你不能在标准创建器中指定 metaclass = Class;
 -- 即使它确实是一个元类 (如果那样做了定义体被会忽略, 和直接实例化 Class 没有不同)
 
+-- 用标准创建器创建类, 并继承刚才的类
 local Student = -- 用 local 是方便演示, 命名空间访问不是本文的重点
 class "Student"(Person) {
   ---@Override
@@ -74,8 +75,9 @@ print(Animal.__classname) -- 输出类似 Class_xxxxxxxxxx
 
 
 -- Class 一种别具风格的用法:
--- 其实你还可以这样定义, 视觉上可能会更好
--- 装作是在一起定义而不是稍后添加, 还能解决不能折叠整个类的问题
+-- 装作是在一起定义而不是稍后添加
+-- 视觉上可能更好, 还能解决不能折叠整个类的问题
+-- 注意，_ENV块级作用域在 lua5.2 以后才适用, luajit 里不能这么写
 local Book = Class "Book" do
   local _G = namespace._G
   local _ENV = namespace.class.Book
