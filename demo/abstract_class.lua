@@ -1,4 +1,5 @@
 require "luaclass"
+luaclass.defaultNS = "_G" -- 便于演示
 
 -- 这个文件简单演示一下luaclass里的抽象类
 --
@@ -14,7 +15,7 @@ require "luaclass"
 
 
 -- 这是一个抽象的Animal类, 它不能实例化, 并且有 eat 和 move 方法待实现
-class "_G::Animal" {
+class "Animal" {
 --  declare = true; -- 不再对抽象类必要
 	abstract = true;
 	eat  = decl.method;
@@ -23,13 +24,13 @@ class "_G::Animal" {
 
 -- 飞行能力抽象类
 -- fly 方法待实现
-class "_G::CanFly" {
+class "CanFly" {
 	abstract = true;
 	fly = decl.method;
 }
 
 
-class "_G::Sheep"(Animal) {
+class "Sheep"(Animal) {
 	---@Override
 	eat = function(self)
 		print(self:getClass():toString().." eats grass.")
@@ -42,7 +43,7 @@ class "_G::Sheep"(Animal) {
 }
 
 -- 多继承, 有疑问的参考MRO的那个demo
-class "_G::Sparrow"(Animal, CanFly) {
+class "Sparrow"(Animal, CanFly) {
 	---@Override
 	eat = function(self)
 		print(self:getClass():toString().." eats insects.")
@@ -79,7 +80,7 @@ Sparrow flys.
 
 -- 错误示范:
 xpcall(function()
-  class "_G::Dog" (Animal) {}
+  class "Dog" (Animal) {}
 end, print)
 -- 报错, 因为Dog类既没有声明为抽象类也没有实现基类的eat和move方法
--- class '_G::Dog' is not abstract and does not override abstract method 'eat'
+-- class 'Dog' is not abstract and does not override abstract method 'eat'
