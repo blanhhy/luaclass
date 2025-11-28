@@ -121,7 +121,7 @@ function luaclass:__new(...)
 
   -- 获取在名字中指定的命名空间
   local ns_name, name = name:match("^([^:]-):*([^:]+)$")
-  ns_name = ns_name and ns_name ~= '' and ns_name or "class"
+  ns_name = ns_name and ns_name ~= '' and ns_name or (self.defaultNS or "class")
 
   local cls = {
     __classname = name;
@@ -193,7 +193,7 @@ local function class(name, bases)
     name = "class.anonymous::Class_"
         .. randstr(10) -- 匿名类
   end
-  
+
   return function(clstb, ...) -- 捕获成员表
     clstb = clstb or {}
 

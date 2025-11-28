@@ -2,11 +2,12 @@ require "luaclass"
 
 -- 这个文件演示如何使用经典 LuaOOP 风格的语法
 
-require "luaclass.util.Class"
 -- 需要额外导入 Class 元类
 -- Class 的类签名是 _G::Class(class::luaclass)
 
--- 出于怀旧, 开发习惯, 原理理解, Lint工具不够强大等等各种原因, 
+Class = require "luaclass.util.Class"
+
+-- 出于怀旧, 开发习惯, 原理理解, Lint工具不够强大等等各种原因,
 -- Luaclass 提供了这个 Class 工具类, 用于模拟传统的 OOP 形式
 
 -- 用 Class 创建类
@@ -83,12 +84,12 @@ xpcall(function()
 local Book = Class "Book" do
   local _G = namespace._G
   local _ENV = namespace.class.Book
-  
+
   function __init(self, name, desc)
     self.name = name or "untitled"
     self.desc = desc or "null"
   end
-  
+
   function showInfo(self)
     _G.print(("BookName: %s\nDescription: %s")
       :format(self.name, self.desc))

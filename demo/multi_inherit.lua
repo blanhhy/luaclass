@@ -3,11 +3,13 @@ require "tablex"
 
 -- 本文件演示多继承的具体用法, 边界情况, 以及一些错误的用法
 
---------
+luaclass.defaultNS = "_G"
+-- 为了方便演示把默认命名空间设置为_G了
 
-local _ENV = namespace.use()
-using 'class'
-using '_G'
+-- tablex 是我的另一个实用库, 支持全lua5.*版本, 目前版本稳定, 可以直接使用
+-- 这里主要使用 table.print 来打印数组
+
+--------
 
 -- 演示: 解决菱形继承
 
