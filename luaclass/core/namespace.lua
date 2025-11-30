@@ -48,6 +48,29 @@ prequire("ffi")
 prequire("jit")
 
 
+
+-- 从命名空间中导入对象
+local function import_from_ns(ns_name, name)
+  if not ns_name or not name then return nil end
+
+  local ns = namespace[ns_name]
+  local obj = ns and ns[name]
+  if not ns then return nil, ("no namespace '%s'"):format(ns_name) end
+  if nil == obj then return nil, ("no object '%s' in namespace '%s'"):format(name, ns_name) end
+
+  return obj
+end
+
+-- 从命名空间中 require 模块的搜索器
+local function searcher_with_ns(modname)
+  if modname:sub(1, 4) ~= "lua." then return nil end -- 不满足触发格式
+  local obj, err = import_from_ns(modname:match("lua%.(.+)%.(.+)"))
+  return obj and function() return obj end or err
+end
+
+table.insert(package.searchers or package.loaders, searcher_with_ns)
+
+
 -- 辅助函数：检查合法标识符
 local keywords = {
   "and", "break", "do", "else", "elseif", "end", "false", "for",
@@ -105,7 +128,7 @@ local function ns_use()
     __newindex    = disallow;
   }
 
-  -- 定义 using 函数
+  -- 定义 using 函数, 向使用的命名空间列表中添加命名空间
   function ns_portal.using(ns)
     ns = ns and (namespace[ns]or(spacename[ns]and(ns)or(nil)))
     if not ns then error("using nothing!", 2) end
@@ -116,6 +139,30 @@ local function ns_use()
     ns_portal._NS       = ns_portal._NS -- 主命名空间可被查询
                           or spacename[ns_list[1]]
     return ns_portal
+  end
+
+  -- 从命名空间导入对象到当前环境中, eg: import "math.pi"; import "MyModule.*"
+  function ns_portal.import(fullname)
+    if fullname:sub(1, 4) == "lua." then
+      fullname = fullname:sub(5)
+    end
+
+    local ns_name, name = fullname:match("^(.+)%.([^%.]+)$")
+
+    if name ~= '*' then
+      local obj, err = import_from_ns(ns_name, name)
+      if not obj then error(err, 2) end
+      ns_portal[name] = obj
+      return obj
+    end
+
+    local ns = namespace[ns_name]
+    if not ns then error(("no namespace '%s' found for import."):format(ns_name), 2) end
+    for k, v in next, ns do
+      if nil ~= ns_portal[k] and check_identifier(k) then
+        ns_portal[k] = v
+      end
+    end
   end
 
   -- 适配旧版_ENV机制(常见于luajit)
@@ -266,24 +313,6 @@ local function ns_next(_, ns_name)
   end
   return next(namespace, ns_name)
 end
-
-
--- 从命名空间中导入对象
-local function import_from_ns(modname)
-  if modname:sub(1, 4) ~= "lua." then return nil end -- 不满足触发格式
-
-  local ns_name, modname = modname:match("lua%.(.+)%.(.+)")
-  if not ns_name or not modname then return nil end -- 格式错误
-
-  local ns = namespace[ns_name]
-  local obj = ns and ns[modname]
-  if not ns then return ("no namespace '%s'"):format(ns_name) end
-  if nil == obj then return ("no object '%s' in namespace '%s'"):format(modname, ns_name) end
-
-  return function() return obj end
-end
-
-table.insert(package.searchers or package.loaders, import_from_ns)
 
 
 -- 导出接口
