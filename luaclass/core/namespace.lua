@@ -4,14 +4,29 @@
 -- 这个 namespace 原本是为 luaclass 设计的, 但不与之耦合
 -- 可以广泛地运用于各种模块或项目中
 
+local conf = {} -- 一些模块配置
+
+-- 变量名是否允许 unicode 字符
+-- 默认取决于解释器的实际实现, 可以修改
+conf.unicode_allowed = not not (load or loadstring)("local 〇=0")
+
+-- 是否自动 using "lua", 默认开启
+conf.auto_usinglua = true
+
+-- 是否自动 using "lua._G", 默认关闭
+conf.auto_using_G = false
+
+
 local _M
 local _G = _G -- Lua 的全局命名空间
 local type, next, rawset, setmetatable = _G.type, _G.next, _G.rawset, _G.setmetatable
 local setfenv = _G.setfenv
 
-local namespace = {_G = _G}     -- 根命名空间容器
-local spacename = {[_G] = "_G"} -- 命名空间名称映射
-local protected = {_G = true}   -- 禁止删除的命名空间
+local lua = {_G = _G} -- Lua 根命名空间
+
+local namespace = {lua = lua, ["lua._G"] = _G}   -- 根命名空间容器
+local spacename = {[lua] = "lua", _G = "lua._G"} -- 命名空间名称映射
+local protected = {lua = true, _G = true}        -- 禁止删除的命名空间
 
 local weaken = _G.require "luaclass.share.weaktb"
 weaken(spacename, 'k')
@@ -27,8 +42,9 @@ setmetatable(protected, weak_MT)
 local function prequire(name)
   local ok, lib = pcall(require, name)
   if ok then
-    namespace[name] = lib
-    spacename[lib]  = name
+    lua[name] = lib
+    namespace["lua."..name] = lib
+    spacename[lib]  = "lua."..name
     protected[lib]  = true
   end
   return lib
@@ -63,9 +79,8 @@ end
 
 -- 从命名空间中 require 模块的搜索器
 local function searcher_with_ns(modname)
-  if modname:sub(1, 4) ~= "lua." then return nil end -- 不满足触发格式
-  local obj, err = import_from_ns(modname:match("lua%.(.+)%.(.+)"))
-  return obj and function() return obj end or err
+  local obj, e = import_from_ns(modname:match("^(.+)%.([^%.]+)$"))
+  return obj and function() return obj end or e
 end
 
 table.insert(package.searchers or package.loaders, searcher_with_ns)
@@ -80,7 +95,7 @@ local keywords = {
 
 local function check_identifier(str)
   if str == '' then return false end -- 不能为空
-  if str:match(_M.unicode and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
+  if str:match(conf.unicode_allowed and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
   if str:match("^%d") then return false end -- 首字符不能是数字
 
   -- 不能是保留词
@@ -130,12 +145,8 @@ local function ns_use()
     return ns_env
   end
 
-  -- 从命名空间导入对象到当前环境中, eg: import "math.pi"; import "MyModule.*"
+  -- 从命名空间导入对象到当前环境中, eg: import "lua.math.pi"; import "MyModule.*"
   function ns_env.import(fullname)
-    if fullname:sub(1, 4) == "lua." then
-      fullname = fullname:sub(5)
-    end
-
     local ns_name, name = fullname:match("^(.+)%.([^%.]+)$")
 
     if name ~= '*' then
@@ -152,6 +163,14 @@ local function ns_use()
         ns_env[k] = v
       end
     end
+  end
+
+  if conf.auto_usinglua then
+    ns_env.using("lua")
+  end
+
+  if conf.auto_using_G then
+    ns_env.using("lua._G")
   end
 
   -- 适配旧版_ENV机制(常见于luajit)
@@ -190,7 +209,7 @@ local function ns_new(...)
       ns_name:sub(-1, -1) == '.' or
       ns_name:find("..", 2, true)
     then
-      error(("bad name of namespace '%s', null dir name included.")
+      error(("bad namespace name '%s', null dir name included.")
         :format(ns_name), 2)
   end
 
@@ -320,15 +339,13 @@ _M = setmetatable({
   find = ns_find;
   iter = ns_next;
   load = import_from_ns;
-
-  -- 是否允许 unicode 字符
-  -- 默认取决于解释器的实际实现, 可以修改
-  unicode = not not (load or loadstring)("local 〇=0");
+  conf = conf;
 }, {
   __index = namespace;
   __call = function (_, ns_name)
     return function (ns) return ns_new(ns_name, ns) end
   end;
 })
+
 
 return _M

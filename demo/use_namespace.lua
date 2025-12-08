@@ -61,4 +61,3 @@ the third hero in prophecy is a dark prince
 asgore's fullname is asgore dreemurr
 not in _G
 ]]
-
