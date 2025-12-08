@@ -3,6 +3,7 @@ require "luaclass"
 -- 这个文件中演示各种运算符重载
 
 -- 定义一个复数类
+
 class "_G::Complex" {
 
   __init = function(self, real, imag)
@@ -26,7 +27,7 @@ class "_G::Complex" {
   end;
 
   __unm = function(self)
-    return Complex(-a.real, -a.imag)
+    return Complex(-self.real, -self.imag)
   end;
 
   __mul = function(a, b)

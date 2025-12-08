@@ -4,8 +4,8 @@
 -- 声明占位符
 -- 提供统一的, 带类型的空值占位符, 用于模拟声明变量
 
-local _G = _G
-local weaken = _G.require "luaclass.share.weaktb"
+-- local _G = _G
+local weaken = require "luaclass.share.weaktb"
 
 local str, num, bool, func, tbl, used, co, any;
 
@@ -40,7 +40,7 @@ local types = weaken({
   [any]  = "any";
 }, 'kv')
 
-return _G.setmetatable({
+local decl = {
   type = types; -- 通过占位符获取类型标志 (字符串或自定义的对象), eg: decl.type[decl.string] -> "string"
   T = function(t)return(phs[t])end; -- 方便取用非变量名的key, eg: decl.T'Math::Vector3'
   typedef = function(cls, name) -- 声明类型别名, eg: decl.typedef(namespace.class.MyString, 'MyString')
@@ -48,4 +48,6 @@ return _G.setmetatable({
     phs[name] = ph
     types[ph] = cls
   end;
-}, {__index=phs})
+}
+
+return setmetatable(decl, {__index=phs})

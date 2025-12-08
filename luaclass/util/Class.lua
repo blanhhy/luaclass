@@ -13,7 +13,6 @@ local rawtype   = namespace._G.type
 local Class
 
 -- 创建一个元类, 用于适配 lua 经典 OOP 语法
----@type table|fun(name?:string, ...?:table):table
 Class = class "_G::Class"(type) {
     defaultNS = "class"; -- 是这个元类创建的类的默认命名空间位置
     ---@Override,@Classmethod

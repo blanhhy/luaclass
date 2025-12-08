@@ -12,14 +12,15 @@ local luaclass = _M.luaclass
 local Object   = _M.Object
 local tostring = _G.tostring
 
+---@class stringlib
 local stringlib = _G.string or _G.require("string")
 String.__index  = stringlib
 
 local string_sub = stringlib.sub
 local array_cat  = _G.table.concat
 
-function stringlib:at(idx) return string_sub(self, idx, idx) end
-function stringlib:join(array) return array_cat(array, self) end
+function stringlib.at(str, idx) return string_sub(str, idx, idx) end
+function stringlib.join(str, array) return array_cat(array, str) end
 
 String.__classname = "String"
 String.__ns_name   = "_G"

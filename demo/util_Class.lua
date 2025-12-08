@@ -5,7 +5,7 @@ require "luaclass"
 -- 需要额外导入 Class 元类
 -- Class 的类签名是 _G::Class(class::luaclass)
 
-Class = require "luaclass.util.Class"
+require "luaclass.util.Class"
 
 -- 出于怀旧, 开发习惯, 原理理解, Lint工具不够强大等等各种原因,
 -- Luaclass 提供了这个 Class 工具类, 用于模拟传统的 OOP 形式

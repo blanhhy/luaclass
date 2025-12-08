@@ -4,7 +4,7 @@ local isinstance = require "luaclass.inherit.isinstance"
 local next, type = next, type
 
 -- 获取类的声明字段表
-local function getDeclared(clstb, bases)
+local function getDeclared(tbl, bases)
   local declared = {}
 
   -- 合并所有基类的声明
@@ -20,7 +20,7 @@ local function getDeclared(clstb, bases)
   end
 
   -- 添加当前类的声明
-  for k, v in next, clstb do
+  for k, v in next, tbl do
     if declare.type[v] then
       declared[k] = v
     end
@@ -30,11 +30,11 @@ local function getDeclared(clstb, bases)
 end
 
 -- 获取类的抽象方法列表
-local function getAbstractMethods(clstb, bases)
-  clstb.__declared = clstb.__declared or getDeclared(clstb, bases)
+local function getAbstractMethods(tbl, bases)
+  tbl.__declared = tbl.__declared or getDeclared(tbl, bases)
   local abms = {}
   local method = declare.method
-  for k, v in next, clstb.__declared do
+  for k, v in next, tbl.__declared do
     if v == method then abms[#abms + 1] = k end
   end
   return abms

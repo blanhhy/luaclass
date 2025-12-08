@@ -12,11 +12,12 @@ local fromsuper  = require("luaclass.inherit.index")
 local namespace  = require("luaclass.core.namespace")
 local checktool  = require("luaclass.core.checktool")
 local declare    = require("luaclass.share.declare")
-local weaken    = require("luaclass.share.weaktb")
+local weaken     = require("luaclass.share.weaktb")
 local randstr    = require("luaclass.share.randstr")
 
 
 -- 类的实例化
+-- 是元类的__call方法
 local function new_instance(cls, ...)
 
   -- 抽象类不能实例化！
@@ -113,7 +114,7 @@ function luaclass:__new(...)
     return (typ == "table" or typ == "string") and obj.__class or typ
   end
 
-  local name, bases, clstb = ...
+  local name, bases, tbl = ...
 
   if not bases or not bases[1] then
     bases = {Object} -- 默认继承 Object
@@ -134,8 +135,8 @@ function luaclass:__new(...)
   cls.__index = cls
 
   -- 复制所有成员到类中
-  if clstb then
-    for k, v in next, clstb do
+  if tbl then
+    for k, v in next, tbl do
       cls[k] = v
     end
   end
@@ -185,8 +186,6 @@ function luaclass:__new(...)
 end
 
 
-
-
 -- 类创建器，用于处理语法
 local function class(name, bases)
   if not name or name == '' then
@@ -194,29 +193,29 @@ local function class(name, bases)
         .. randstr(10) -- 匿名类
   end
 
-  return function(clstb, ...) -- 捕获成员表
-    clstb = clstb or {}
+  return function(tbl, ...) -- 捕获成员表
+    tbl = tbl or {}
 
     -- 如果获取到的是一个类
-    if clstb.__classname then
-      local firstBase = clstb
+    if tbl.__classname then
+      local firstBase = tbl
       return class(name, {firstBase, ...}) -- 捕获基类
     end
 
-    local mcls = clstb.metaclass or luaclass -- 支持指定元类，默认 luaclass
-    clstb.metaclass = nil
+    local mcls = tbl.metaclass or luaclass -- 支持指定元类，默认 luaclass
+    tbl.metaclass = nil
 
     -- 声明模式记录静态声明的字段
-    if clstb.declare then
-      clstb.__declared = checktool.getDeclared(clstb, bases)
+    if tbl.declare then
+      tbl.__declared = checktool.getDeclared(tbl, bases)
     end
 
     -- 抽象类记录抽象方法
-    if clstb.abstract then
-      clstb.__abstract_methods = checktool.getAbstractMethods(clstb, bases)
+    if tbl.abstract then
+      tbl.__abstract_methods = checktool.getAbstractMethods(tbl, bases)
     end
 
-    return mcls(name, bases, clstb) -- 调用元类创建类
+    return mcls(name, bases, tbl) -- 调用元类创建类
   end
 end
 
