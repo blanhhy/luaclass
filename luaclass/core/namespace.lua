@@ -94,17 +94,12 @@ local function check_identifier(str)
 end
 
 
+-- 命名空间环境的元表
+local ns_env_MT = {__mode='v'}
 
-
--- 在提供主命名空间之前, 不可以定义变量
-local function disallow(_, name)
-  error(("definition of variable '%s' in namespace ot allowed, namespace not set")
-    :format(name), 2)
-end
-
-local function ns_get_val(portal, name)
+function ns_env_MT:__index(name)
   local value
-  local ns_list = portal["$list"]
+  local ns_list = self["$list"]
   for i = 1, ns_list.n do
     value = ns_list[i][name]
     if nil ~= value then
@@ -114,35 +109,29 @@ local function ns_get_val(portal, name)
   return namespace[name] -- 允许全名访问其他命名空间
 end
 
-
 -- 使用命名空间, 返回一个用作 _ENV 的表
 local function ns_use()
 
   local ns_list   = {n=0} -- 要使用的命名空间列表
-  local ns_portal = {     -- 命名空间访问入口
+  local ns_env    = {     -- 命名空间访问入口
     ["$list"]     = ns_list;
     namespace     = _M;   -- 访问本模块
   }
-  local ns_MT     = {     -- 命名空间入口的元表
-    __index       = ns_get_val;
-    __newindex    = disallow;
-  }
+
+  -- setmetatable(ns_list, {__mode='v'})
+  weaken(ns_list, 'v') -- 弱引用命名空间表
 
   -- 定义 using 函数, 向使用的命名空间列表中添加命名空间
-  function ns_portal.using(ns)
+  function ns_env.using(ns)
     ns = ns and (namespace[ns]or(spacename[ns]and(ns)or(nil)))
     if not ns then error("using nothing!", 2) end
-
     ns_list.n           = ns_list.n + 1
     ns_list[ns_list.n]  = ns
-    ns_MT.__newindex    = ns_list[1] -- 新变量保存到主命名空间
-    ns_portal._NS       = ns_portal._NS -- 主命名空间可被查询
-                          or spacename[ns_list[1]]
-    return ns_portal
+    return ns_env
   end
 
   -- 从命名空间导入对象到当前环境中, eg: import "math.pi"; import "MyModule.*"
-  function ns_portal.import(fullname)
+  function ns_env.import(fullname)
     if fullname:sub(1, 4) == "lua." then
       fullname = fullname:sub(5)
     end
@@ -152,26 +141,26 @@ local function ns_use()
     if name ~= '*' then
       local obj, err = import_from_ns(ns_name, name)
       if not obj then error(err, 2) end
-      ns_portal[name] = obj
+      ns_env[name] = obj
       return obj
     end
 
     local ns = namespace[ns_name]
     if not ns then error(("no namespace '%s' found for import."):format(ns_name), 2) end
     for k, v in next, ns do
-      if nil ~= ns_portal[k] and check_identifier(k) then
-        ns_portal[k] = v
+      if nil ~= ns_env[k] and check_identifier(k) then
+        ns_env[k] = v
       end
     end
   end
 
   -- 适配旧版_ENV机制(常见于luajit)
   if setfenv then
-    ns_portal._ENV = ns_portal
-    setfenv(2, ns_portal)
+    ns_env._ENV = ns_env
+    setfenv(2, ns_env)
   end
 
-  return setmetatable(ns_portal, ns_MT)
+  return setmetatable(ns_env, ns_env_MT)
 end
 
 
@@ -205,10 +194,17 @@ local function ns_new(...)
         :format(ns_name), 2)
   end
 
-  -- 已经存在同名命名空间
+  -- 已经存在同名命名空间, 重新打开它
   if namespace[ns_name] then
-    error(("redefinition of namespace '%s', already existing.")
-      :format(ns_name), 2)
+    local old_ns = namespace[ns_name]
+    if protected[ns_name] then
+      error(("attempt to re-open a protected namespace '%s'."), 2)
+    end
+    if not ns or ns == old_ns then return old_ns end -- 完全相同, 无需修改
+    for k, v in next, ns do
+      if nil ~= old_ns[k] then old_ns[k] = v end
+    end
+    return old_ns
   end
 
   -- 禁止同一个命名空间拥有多个名称
@@ -328,15 +324,10 @@ _M = setmetatable({
   -- 是否允许 unicode 字符
   -- 默认取决于解释器的实际实现, 可以修改
   unicode = not not (load or loadstring)("local 〇=0");
-
 }, {
   __index = namespace;
   __call = function (_, ns_name)
-    local ns_name, var_name = ns_name:match("^([^:]+):*([^:]*)$")
-    if var_name and #var_name>0 then return namespace[ns_name][var_name] end
-    return function (ns)
-      return ns_new(ns_name, ns)
-    end
+    return function (ns) return ns_new(ns_name, ns) end
   end;
 })
 

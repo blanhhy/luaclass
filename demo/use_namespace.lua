@@ -25,22 +25,24 @@ namespace "Game.Deltarune.roles" {
 -- 使用命名空间
 local _ENV = namespace.use()
 
--- 用using添加要使用的命名空间, 第一个会被视为主命名空间, 新的变量会保存到主命名空间中
--- using并不是一个全局函数, 而是namespace.use返回的_ENV中特有的函数
-using(namespace.Game.Deltarune) -- 主命名空间(可读可写)
--- using(namespace._G) -- 附加命名空间(只读)
+-- 用using添加要使用的命名空间, 可以写多个using, 会按序查找(如果有同名对象要注意这一点)
 -- using既可以传入命名空间表对象, 也可以传入命名空间全名, 比如using'_G'和using(namespace._G)是等价的
 -- using返回_ENV本身, 因此也可以链式调用
+-- using并不是一个全局函数, 而是namespace.use返回的_ENV中特有的函数
+using(namespace.Game.Deltarune)
 
--- import导入对象到当前环境中, 语法为import "[lua.]命名空间.对象名"
+-- import导入对象到本地_ENV中, 语法为import "[lua.]命名空间.对象名"
 -- 同样的, import也不是全局函数, 只有命名空间环境中才有
 import "lua._G.print";
 import "lua._G.pairs";
--- 对象名可以用*, 表示导入其中所有名字合法的对象
+
+-- import对象名可以用*, 表示导入其中所有名字合法的对象
 -- 如果多次导入的对象有重名, 后导入的不会覆盖先导入的, 也就是实际不会导入
 -- 如果一定要导入, 可以先赋值为nil, 从当前环境中删除再导入
 
-heros = {}
+heros = {} -- 存放英雄信息的表(存在于本地_ENV中)
+namespace.Game.Deltarune.heros = heros -- 把heros表放到命名空间中
+-- namespace.new("Game.Deltarune.heros", heros) -- 也可以用new把它作为一个命名空间
 
 for _, role in pairs(roles) do
   if role.is_hero then
