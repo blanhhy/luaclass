@@ -31,8 +31,8 @@ require "luaclass"
 ```lua
 require "luaclass"
 
--- 定义一个全局类 MyClass
-class "_G::MyClass" {
+-- 定义一个类 MyClass
+class "MyClass" {
   greet = function(self)
     print("Hello from "..tostring(luaclass(self)));
   end;
@@ -51,14 +51,14 @@ obj:greet() --> Hello from MyClass
 
 ```lua
 -- 定义一个基类
-class "_G::Animal" {
+class "Animal" {
   speak = function(self)
     print(self.name .. " makes a sound.")
   end;
 }
 
 -- 定义一个子类
-class "_G::Dog"(Animal) -- 继承 Animal 类
+class "Dog"(Animal) -- 继承 Animal 类
 {
   __init = function(self, name)
     self.name = name
@@ -82,7 +82,7 @@ super(dog):speak() -- 输出: Buddy makes a sound.
 
 ```lua
 -- 定义复数类
-class "_G::Complex" {
+class "Complex" {
   __init = function(self, real, imag)
     self.real = real
     self.imag = imag
@@ -153,9 +153,12 @@ print(z1 + z2)  --> 4 + 6i
 
 ### v1.9
 
-- 稳定版本, 修复许多遗留问题
-- 增加抽象类支持, 命名空间对象require, 以及其它小功能
-- 优化一些内部细节
+- 修复许多遗留问题
+- 增加抽象类支持，对应的字段为 `abstract = true`
+- 新增匿名类模拟，类名缺省或为空即可, 匿名类需要自行管理生命周期
+- 命名空间结构调整，现在所有标准库（包括 `_G`）都在 `lua` 命名空间下
+- 现在考虑到 Lua 在工程上的使用习惯, 新类的默认命名空间改为 `lua._G`
+- 命名空间环境添加 `import` 函数，元表改为共享，只存一份
 
 ### v1.8
 
