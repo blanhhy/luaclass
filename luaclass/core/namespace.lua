@@ -24,9 +24,9 @@ local setfenv = _G.setfenv
 
 local lua = {_G = _G} -- Lua 根命名空间
 
-local namespace = {lua = lua, ["lua._G"] = _G}   -- 根命名空间容器
-local spacename = {[lua] = "lua", _G = "lua._G"} -- 命名空间名称映射
-local protected = {lua = true, _G = true}        -- 禁止删除的命名空间
+local namespace = {lua = lua, ["lua._G"] = _G}     -- 根命名空间容器
+local spacename = {[lua] = "lua", [_G] = "lua._G"} -- 命名空间名称映射
+local protected = {lua = true, ["lua._G"] = true}  -- 禁止删除的命名空间
 
 local weaken = _G.require "luaclass.share.weaktb"
 weaken(spacename, 'k')
@@ -43,9 +43,10 @@ local function prequire(name)
   local ok, lib = pcall(require, name)
   if ok then
     lua[name] = lib
-    namespace["lua."..name] = lib
-    spacename[lib]  = "lua."..name
-    protected[lib]  = true
+    name = "lua."..name
+    namespace[name] = lib
+    protected[name] = true
+    spacename[lib]  = name
   end
   return lib
 end
@@ -63,27 +64,10 @@ prequire("utf8")
 prequire("ffi")
 prequire("jit")
 
+-- 命名空间视作已导入的模块, 注册到 package.loaded 中
+setmetatable(package.loaded, {__index = namespace})
 
 
--- 从命名空间中导入对象
-local function import_from_ns(ns_name, name)
-  if not ns_name or not name then return nil end
-
-  local ns = namespace[ns_name]
-  local obj = ns and ns[name]
-  if not ns then return nil, ("no namespace '%s'"):format(ns_name) end
-  if nil == obj then return nil, ("no object '%s' in namespace '%s'"):format(name, ns_name) end
-
-  return obj
-end
-
--- 从命名空间中 require 模块的搜索器
-local function searcher_with_ns(modname)
-  local obj, e = import_from_ns(modname:match("^(.+)%.([^%.]+)$"))
-  return obj and function() return obj end or e
-end
-
-table.insert(package.searchers or package.loaders, searcher_with_ns)
 
 
 -- 辅助函数：检查合法标识符
@@ -122,6 +106,18 @@ function ns_env_MT:__index(name)
     end
   end
   return namespace[name] -- 允许全名访问其他命名空间
+end
+
+-- 从命名空间中导入对象
+local function import_from_ns(ns_name, name)
+  if not ns_name or not name then return nil end
+
+  local ns = namespace[ns_name]
+  local obj = ns and ns[name]
+  if not ns then return nil, ("no namespace '%s'"):format(ns_name) end
+  if nil == obj then return nil, ("no object '%s' in namespace '%s'"):format(name, ns_name) end
+
+  return obj
 end
 
 -- 使用命名空间, 返回一个用作 _ENV 的表
@@ -166,11 +162,11 @@ local function ns_use()
   end
 
   if conf.auto_usinglua then
-    ns_env.using("lua")
+    ns_env.using(lua)
   end
 
   if conf.auto_using_G then
-    ns_env.using("lua._G")
+    ns_env.using(_G)
   end
 
   -- 适配旧版_ENV机制(常见于luajit)

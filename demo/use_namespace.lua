@@ -2,13 +2,6 @@ local namespace = require "luaclass.core.namespace"
 
 -- 本文件演示一般情况下命名空间的用法, 这里没有引入 luaclass 库
 
--- 一般功能:
--- 从命名空间中导入对象(须以lua开头, 表示从lua而不是外部导入)
-local sin = require "lua.math.sin"
-local PI = require "lua.math.pi"
-
-print("sin(pi/6) =", sin(PI/6)) -- 输出: sin(pi/6) = 0.5
-
 -- 定义一个命名空间, 包含三角符文的一些角色
 -- 定义嵌套命名空间时, 自动创建父命名空间
 namespace "Game.Deltarune.roles" {
@@ -21,7 +14,10 @@ namespace "Game.Deltarune.roles" {
   -- ...
 }
 
--- 特殊功能:
+-- 命名空间是已导入的包, 所以可以require它
+local Game = require "Game"
+print(Game == namespace.Game) -- true
+
 -- 使用命名空间
 local _ENV = namespace.use()
 
