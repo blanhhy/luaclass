@@ -2,8 +2,6 @@ require "luaclass"
 require "tablex"
 -- tablex 是我的另一个实用的模块, 目前版本稳定无变动
 
-luaclass.defaultNS = "_G" -- 便于演示
-
 -- 本文件演示多继承的具体用法, 边界情况, 以及一些错误的用法
 
 --------

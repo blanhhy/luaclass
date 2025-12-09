@@ -3,7 +3,7 @@ require "luaclass"
 -- 这个文件中我们主要演示如何声明字段以及进行类型检查。
 
 -- 首先我们定义一个Tank类
-class "_G::Tank" {
+class "Tank" {
     declare = true; -- 开启声明模式'
 
     -- 声明一些字段

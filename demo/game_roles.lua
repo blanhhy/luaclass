@@ -7,7 +7,7 @@ namespace.new'Game.Math'
 
 _ENV = namespace.use()
 using'Game'
-using'_G'
+using'lua._G'
 
 -- 游戏地图中的点
 class "Game.Math::Point" {

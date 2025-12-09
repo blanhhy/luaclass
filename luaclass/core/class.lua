@@ -39,18 +39,20 @@ local function new_instance(cls, ...)
   return inst
 end
 
+local globalns = namespace.find(_G)
 
 local luaclass = {
   __classname  = "luaclass";
-  __ns_name    = "class";
+  __ns_name    = "lua.class";
   __tostring   = function(self) return self.__classname or "<anonymous>" end;
   __call       = new_instance;
   __index      = fromsuper;
+  defaultns    = globalns;
 } -- 基本元类
 
 local Object   = {
   __classname  = "Object";
-  __ns_name    = "class";
+  __ns_name    = "lua.class";
   __tostring   = function(self) return ("<%s object>"):format(self.__class.__classname) end;
   __new        = function(self) return setmetatable({__class = self}, self) end;
   isInstanceOf = isinstance;
@@ -73,23 +75,20 @@ typedef(luaclass, "luaclass")
 typedef(Object, "Object")
 
 
--- 所有类的默认命名空间
--- 如果创建时不指定命名空间, 默认添加到这里
+-- luaclass 模块命名空间
 local class_NS = namespace.new(
-"class", {
+"lua.class", {
   luaclass = luaclass;
   Object   = Object;
 
   isinstance = isinstance;
   namespace  = namespace;
   decl       = declare;
-
-  std = _G;
 })
 
 -- 匿名类命名空间
 -- kv 弱表, 避免影响垃圾回收
-namespace.new("class.anonymous", weaken({}, 'kv'))
+namespace.new("lua.class.anonymous", weaken({}, 'kv'))
 
 
 local mm_names = {
@@ -122,7 +121,12 @@ function luaclass:__new(...)
 
   -- 获取在名字中指定的命名空间
   local ns_name, name = name:match("^([^:]-):*([^:]+)$")
-  ns_name = ns_name and ns_name ~= '' and ns_name or (self.defaultNS or "class")
+
+  if not ns_name or ns_name == '' then
+    ns_name = self.defaultns -- 默认命名空间
+  elseif ns_name:sub(1, 1) == '.' then
+    ns_name = self.defaultns..ns_name -- 相对路径
+  end
 
   local cls = {
     __classname = name;
@@ -189,7 +193,7 @@ end
 -- 类创建器，用于处理语法
 local function class(name, bases)
   if not name or name == '' then
-    name = "class.anonymous::Class_"
+    name = "lua.class.anonymous::Class_"
         .. randstr(10) -- 匿名类
   end
 

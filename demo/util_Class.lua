@@ -32,7 +32,6 @@ p:sayHello() -- 输出: Hello, I am Bob
 -- 即使它确实是一个元类 (如果那样做了定义体被会忽略, 和直接实例化 Class 没有不同)
 
 -- 用标准创建器创建类, 并继承刚才的类
-local Student = -- 用 local 是方便演示, 命名空间访问不是本文的重点
 class "Student"(Person) {
   ---@Override
   __init = function(self, name, grade)
@@ -82,8 +81,8 @@ print(Animal.__classname) -- 输出类似 Class_xxxxxxxxxx
 xpcall(function()
 
 local Book = Class "Book" do
-  local _G = namespace._G
-  local _ENV = namespace.class.Book
+  local _G = _G
+  local _ENV = Book
 
   function __init(self, name, desc)
     self.name = name or "untitled"

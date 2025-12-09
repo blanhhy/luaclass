@@ -8,10 +8,11 @@ local conf = {} -- 一些模块配置
 
 -- 变量名是否允许 unicode 字符
 -- 默认取决于解释器的实际实现, 可以修改
-conf.unicode_allowed = not not (load or loadstring)("local 〇=0")
+conf.unicode_supported = not not (load or loadstring)("local 〇=0")
 
--- 是否自动 using "lua", 默认开启
-conf.auto_usinglua = true
+-- 是否允许任意命名空间环境访问 lua, 如直接 io.open 而不是 lua.io.open
+-- 为了贴合 Lua 使用习惯, 默认开启
+conf.allow_access_lua = true
 
 -- 是否自动 using "lua._G", 默认关闭
 conf.auto_using_G = false
@@ -79,7 +80,7 @@ local keywords = {
 
 local function check_identifier(str)
   if str == '' then return false end -- 不能为空
-  if str:match(conf.unicode_allowed and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
+  if str:match(conf.unicode_supported and "[^%w_\128-\244]" or "[^%w_]") then return false end -- 不能包含非法字符
   if str:match("^%d") then return false end -- 首字符不能是数字
 
   -- 不能是保留词
@@ -104,6 +105,9 @@ function ns_env_MT:__index(name)
     if nil ~= value then
       return value
     end
+  end
+  if conf.allow_access_lua then
+    return lua[name] or namespace[name] -- 允许访问 lua
   end
   return namespace[name] -- 允许全名访问其他命名空间
 end
@@ -159,10 +163,6 @@ local function ns_use()
         ns_env[k] = v
       end
     end
-  end
-
-  if conf.auto_usinglua then
-    ns_env.using(lua)
   end
 
   if conf.auto_using_G then

@@ -2,18 +2,18 @@
 -- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.util.*
 
 local _G = _G
-local String = _G.getmetatable('')
+local String = getmetatable('')
 
 if not String then return nil end
 
-local _M = _G.require("luaclass.main")
+local _M = require("luaclass.main")
 
 local luaclass = _M.luaclass
 local Object   = _M.Object
 local tostring = _G.tostring
 
 ---@class stringlib
-local stringlib = _G.string or _G.require("string")
+local stringlib = _G.string or require("string")
 String.__index  = stringlib
 
 local string_sub = stringlib.sub
@@ -23,7 +23,7 @@ function stringlib.at(str, idx) return string_sub(str, idx, idx) end
 function stringlib.join(str, array) return array_cat(array, str) end
 
 String.__classname = "String"
-String.__ns_name   = "_G"
+String.__ns_name   = "lua._G"
 String.typedef     = "string"
 String.__class     = luaclass
 String.__mro       = {String, Object, n=2, lv={1, 1, n=2}}
@@ -40,15 +40,15 @@ function String.__new(_, val)
 	return tostring(val)
 end
 
-for k, v in _G.next, stringlib do String[k] = v end
+for k, v in next, stringlib do String[k] = v end
 
 -- 必要的实例字段和方法
 stringlib.__class      = String
 stringlib.isInstanceOf = _M.isinstance
 stringlib.getClass     = Object.getClass
 
-_G.setmetatable(String, luaclass)
-_G.rawset(_G, "String", String)
+setmetatable(String, luaclass)
+rawset(_G, "String", String)
 _M.decl.typedef(String, "string") -- 取代原来的string
 
 return String

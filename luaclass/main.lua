@@ -4,7 +4,7 @@ local class = _G.require "luaclass.core.class"
 local super = _G.require "luaclass.inherit.super"
 local nsman = _G.require "luaclass.core.namespace"
 
-local class_NS = nsman.class
+local class_NS = nsman.lua.class
 
 local declare    = class_NS.decl
 local isinstance = class_NS.isinstance
@@ -17,7 +17,7 @@ class_NS.super = super
 class_NS.__export = {
   _G;
   luaclass   = luaclass;
-  Object     = Object; 
+  Object     = Object;
   namespace  = nsman;
   decl       = declare;
   isinstance = isinstance;

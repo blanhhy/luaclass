@@ -4,7 +4,7 @@ require "luaclass"
 
 -- 定义一个复数类
 
-class "_G::Complex" {
+class "Complex" {
 
   __init = function(self, real, imag)
     self.real = real or 0
