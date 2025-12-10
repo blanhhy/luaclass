@@ -1,10 +1,12 @@
-assert(package.loaded.luaclass, "luaclass required!")
+if not class then
+    require "luaclass"
+end
 
 -- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.util.*
 
-local randstr   = require "luaclass.share.randstr"
-local __new     = luaclass.__new
-local type      = _G.type
+local randstr = require "luaclass.share.randstr"
+local __new   = luaclass.__new
+local type    = _G.type
 
 local Class
 
