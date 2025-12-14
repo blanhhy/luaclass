@@ -20,7 +20,7 @@ conf.auto_using_G = false
 
 local _M
 local _G = _G -- Lua 的全局命名空间
-local type, next, rawset, setmetatable = _G.type, _G.next, _G.rawset, _G.setmetatable
+local type, next, rawget, rawset, setmetatable = _G.type, _G.next, _G.rawget, _G.rawset, _G.setmetatable
 local setfenv = _G.setfenv
 
 local lua = {_G = _G} -- Lua 根命名空间
@@ -95,11 +95,12 @@ end
 
 
 -- 命名空间环境的元表
-local ns_env_MT = {__mode='v'}
+local ns_env_MT = {}
 
 function ns_env_MT:__index(name)
   local value
   local ns_list = self["$list"]
+  if not ns_list then error() end
   for i = 1, ns_list.n do
     value = ns_list[i][name]
     if nil ~= value then
@@ -159,7 +160,7 @@ local function ns_use()
     local ns = namespace[ns_name]
     if not ns then error(("no namespace '%s' found for import."):format(ns_name), 2) end
     for k, v in next, ns do
-      if nil ~= ns_env[k] and check_identifier(k) then
+      if nil == rawget(ns_env, k) and check_identifier(k) then
         ns_env[k] = v
       end
     end
