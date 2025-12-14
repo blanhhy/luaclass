@@ -100,7 +100,6 @@ local ns_env_MT = {}
 function ns_env_MT:__index(name)
   local value
   local ns_list = self["$list"]
-  if not ns_list then error() end
   for i = 1, ns_list.n do
     value = ns_list[i][name]
     if nil ~= value then
