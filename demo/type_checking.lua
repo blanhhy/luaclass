@@ -29,7 +29,7 @@ class "Tank" {
 
     attack = function(self, target)
 
-        -- 这里我们使用isinstance函数进行类型检查
+        -- 这里使用isinstance函数进行类型检查
         if not isinstance(target, Tank) then
             error "Attack target is not a Tank!";
         end;
@@ -43,7 +43,7 @@ class "Tank" {
 
     heal = function(self, amount)
         -- 这里可以用type, 也可以用isinstance
-        -- isinstance是兼容基本类型的, 类型参数传入字符串即可
+        -- isinstance是兼容基本类型的, 参数2传入type字符串即可
         if not isinstance(amount, "number") then
             error "Heal amount is not a number!";
             return;
@@ -53,6 +53,9 @@ class "Tank" {
         说到isinstance有必要讲一下, 有的人可能喜欢用obj:isInstanceOf(cls)来调用,
         这个方法继承自Object类, 和isinstance其实是同一个函数, 一般情况下每个类都一样
         但这样要求obj本身是一个luaclass的对象, 因此isinstance能应对更多的情况.
+
+        另一个类型函数是luaclass(), luaclass作为元类和Python中的type有类似的功能.
+        luaclass和isinstance单参数调用时行为一致, 都会返回类对象或lua的type字符串.
         ]]
 
         self.health = self.health + amount;
@@ -103,4 +106,4 @@ xxx.lua:95: Initializing field 'Tank.damage' with a string value, number expecte
 
 -- 没有类型检查的话, 这么定义不会报错
 -- 即使参与运算, 也不会报错, 因为有隐式转换, 但是比较时就会报错
--- 这会导致早期的根本的错因被掩盖, 日后添加代码的时候明明逻辑是对的却报错了, 就很憋屈
+-- 这会导致早期的根本的错因被掩盖, 日后添加代码的时候明明逻辑是对的却报错了

@@ -3,7 +3,7 @@ require "luaclass"
 -- 这个文件演示如何使用经典 LuaOOP 风格的语法
 
 -- 需要额外导入 Class 元类
--- Class 的类签名是 _G::Class(class::luaclass)
+-- Class 的类签名是 lua._G::Class(lua.class::luaclass)
 
 require "luaclass.util.Class"
 
@@ -52,7 +52,7 @@ stu:sayHello()
 
 -- 有很多传统的类库没有类名一说, 就靠一个变量名
 -- Class 也模拟了这种用法, 可以匿名创建, 实际类名将会是一个随机字符串
--- 命名空间则是 class.anonymous, 此命名空间为kv弱表, 不会延长匿名类的生命周期
+-- 命名空间则是 lua.class.anonymous, 此命名空间为kv弱表, 不会延长匿名类的生命周期
 
 -- 不带字符串参数 (可以有基类), 匿名创建类
 local Animal = Class()
@@ -76,8 +76,8 @@ print(Animal.__classname) -- 输出类似 Class_xxxxxxxxxx
 
 -- Class 一种别具风格的用法:
 -- 装作是在一起定义而不是稍后添加
--- 视觉上可能更好, 还能解决不能折叠整个类的问题
--- 注意，_ENV块级作用域在 lua5.2 以后才适用, luajit 里不能用这种写法
+-- 视觉上可能更好, 还能解决编辑器不能折叠整个类的问题
+-- _ENV块级作用域在 lua5.2+ 才有, luajit 里不能用这种写法
 xpcall(function()
 
 local Book = Class "Book" do

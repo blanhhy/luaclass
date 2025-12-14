@@ -3,7 +3,7 @@ require "luaclass.util.String"
 -- 字符串适配类, 附加包, 需要单独导入
 -- 导入String后lua内置的字符串类型会原地变成String类
 -- 完全融入luaclass体系的同时保持了原生特性
--- String类的签名是_G::String(class::Object)
+-- String类的签名是lua._G::String(lua.class::Object)
 -- String类这个对象是字符串原本的元表, 它在原版lua就存在
 
 local str = "hello"
