@@ -1,0 +1,177 @@
+-- luaclass/util/LuaArray.lua
+-- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.util.*
+
+if not class then
+    require "luaclass"
+end
+
+local type = type
+local tostring = tostring
+local Int = math.floor
+local remove = table.remove
+
+class "LuaArray" {
+    ---@static
+    ---@param lim integer
+    ---@return integer|nil, string? errmsg
+    chkidx = function(index, lim)
+        local err = (
+            (type(index) ~= "number" or Int(index) ~= index) and
+            ("<integer> expected, got <%s>."):format(isinstance(index))
+        ) or (
+            (index < 1 or index > lim) and
+            "Array index out of range"
+        )
+        if err then return nil, err end
+        return index
+    end;
+
+    ---@Constructor
+    __init = function(self, array)
+        if not array then return end
+
+        if type(array) ~= "table" then
+            error(("<table?> expected, got <%s>."):format(isinstance(array)), 2)
+        end
+
+        local length = 0
+        for i, v in ipairs(array) do
+            self[i] = v
+            length = i
+        end
+        self.length = length
+    end;
+
+    __len = function(self)
+        return self.length
+    end;
+
+    ---@Override
+    __tostring = function(self)
+        local strList = {}
+        for i = 1, self.length do
+            strList[i] = tostring(self[i])
+        end
+        return '{'..table.concat(strList, ", ")..'}'
+    end;
+
+    append = function(self, value)
+        if nil == value then
+            error("Cannot add nil into a LuaArray", 2)
+        end
+        self.length = self.length + 1
+        self[self.length] = value
+    end;
+
+    ---@param index integer
+    insert = function(self, index, value)
+        index = assert(LuaArray.chkidx(index, self.length + 1))
+        if nil == value then
+            error("Cannot add nil into a LuaArray", 2)
+        end
+        self.length = self.length + 1
+        return table.insert(self, index, value)
+    end;
+
+    ---@param index integer
+    pop = function(self, index)
+        index = assert(LuaArray.chkidx(index, self.length))
+        local value = remove(self, index)
+        self.length = self.length - 1
+        return value
+    end;
+
+    find = function(self, value)
+        if nil == value then
+            error("non-nil value expected.", 2)
+        end
+        for i = 1, self.length do
+            if value == self[i] then return i end
+        end
+        return nil
+    end;
+
+    findLast = function(self, value)
+        if nil == value then
+            error("non-nil value expected.", 2)
+        end
+        for i = self.length, 1, -1 do
+            if value == self[i] then return i end
+        end
+        return nil
+    end;
+
+    findAll = function(self, value)
+        if nil == value then
+            error("non-nil value expected.", 2)
+        end
+        local indexs = {}
+        for i = 1, self.length do
+            if value == self[i] then
+                indexs[#indexs+1] = i
+            end
+        end
+        return indexs
+    end;
+
+    remove = function(self, value)
+        if nil == value then
+            error("non-nil value expected.", 2)
+        end
+        for i = 1, self.length do
+            if value == self[i] then
+                remove(self, i)
+                self.length = self.length - 1
+                return i
+            end
+        end
+        return nil
+    end;
+
+    removeLast = function(self, value)
+        if nil == value then
+            error("non-nil value expected.", 2)
+        end
+        for i = self.length, 1, -1 do
+            if value == self[i] then
+                remove(self, i)
+                self.length = self.length - 1
+                return i
+            end
+        end
+        return nil
+    end;
+
+    removeAll = function(self, value)
+        if nil == value then
+            error("non-nil value expected.", 2)
+        end
+        for i = self.length, 1, -1 do
+            if value == self[i] then
+                remove(self, i)
+                self.length = self.length - 1
+            end
+        end
+    end;
+
+    concat = table.concat;
+    unpack = table.unpack;
+    ipairs = ipairs;
+    sort   = table.sort;
+
+    ---@param array table
+    extend = function(self, array)
+        if type(array) ~= "table" then
+            error(("<table?> expected, got <%s>."):format(isinstance(array)), 2)
+        end
+        local length = self.length
+        local count = 0
+        for i, v in ipairs(array) do
+            self[length + i] = array[i]
+            count = i
+        end
+        self.length = length + count
+    end;
+}
+
+return LuaArray
