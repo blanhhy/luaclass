@@ -234,6 +234,23 @@ class "LuaArray" {
         end
         return values
     end;
+
+    -- 获取去重数组
+    unique = function(self)
+        local unique = LuaArray:__new()
+        local seen = {}
+        local count = 0
+        for i = 1, self.length do
+            local value = self[i]
+            if not seen[value] then
+                seen[value] = true
+                count = count + 1
+                unique[count] = value
+            end
+        end
+        unique.length = count
+        return unique
+    end;
 }
 
 -- 让切片语法更简洁
