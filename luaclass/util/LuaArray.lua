@@ -12,9 +12,13 @@ local remove = table.remove
 
 class "LuaArray" {
     ---@static
+    checkEnabled = true;
+    
+    ---@static
     ---@param lim integer
-    ---@return integer|nil, string? errmsg
+    ---@return integer index
     chkidx = function(index, lim)
+        if not LuaArray.checkEnabled then return index end
         local err = (
             (type(index) ~= "number" or Int(index) ~= index) and
             ("<integer> expected, got <%s>."):format(isinstance(index))
@@ -22,7 +26,7 @@ class "LuaArray" {
             (index < 1 or index > lim) and
             "Array index out of range"
         )
-        if err then return nil, err end
+        if err then error(err, 2) end
         return index
     end;
 
@@ -65,7 +69,7 @@ class "LuaArray" {
 
     ---@param index integer
     insert = function(self, index, value)
-        index = assert(LuaArray.chkidx(index, self.length + 1))
+        index = LuaArray.chkidx(index, self.length + 1)
         if nil == value then
             error("Cannot add nil into a LuaArray", 2)
         end
@@ -75,7 +79,7 @@ class "LuaArray" {
 
     ---@param index integer
     pop = function(self, index)
-        index = assert(LuaArray.chkidx(index, self.length))
+        index = LuaArray.chkidx(index, self.length)
         local value = remove(self, index)
         self.length = self.length - 1
         return value
@@ -155,7 +159,7 @@ class "LuaArray" {
     end;
 
     concat = table.concat;
-    unpack = table.unpack;
+    unpack = table.unpack or unpack;
     ipairs = ipairs;
     sort   = table.sort;
 
@@ -171,6 +175,19 @@ class "LuaArray" {
             count = i
         end
         self.length = length + count
+    end;
+    
+    ---@param i? integer
+    ---@param j? integer
+    reverse = function(self, i, j)
+        i = i and LuaArray.chkidx(i, self.length) or 1
+        j = j and LuaArray.chkidx(j, self.length) or self.length
+        while i < j do
+            self[i], self[j] = self[j], self[i]
+            i = i + 1
+            j = j - 1
+        end
+        return self
     end;
 }
 
