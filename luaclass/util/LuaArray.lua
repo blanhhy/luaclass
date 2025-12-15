@@ -251,6 +251,40 @@ class "LuaArray" {
         unique.length = count
         return unique
     end;
+
+    clear = function(self)
+        for i = 1, self.length do
+            self[i] = nil
+        end
+        self.length = 0
+    end;
+
+    ---@static
+    ---@param length integer
+    ---@param value? any
+    -- 创建一个指定长度的数组, 并填充默认值
+    create = function(length, value)
+        if nil == value then value = 0 end
+        length = LuaArray.chkidx(length, math.huge)
+        local arr = LuaArray:__new()
+        for i = 1, length do
+            arr[i] = value
+        end
+        arr.length = length
+        return arr
+    end;
+
+    fill = function(self, value, i, j)
+        if nil == value then
+            error("Cannot add nil into a LuaArray", 2)
+        end
+        i = i and LuaArray.chkidx(i, self.length) or 1
+        j = j and LuaArray.chkidx(j, self.length) or self.length
+        for o = i, j do
+            self[o] = value
+        end
+        return self
+    end;
 }
 
 -- 让切片语法更简洁
