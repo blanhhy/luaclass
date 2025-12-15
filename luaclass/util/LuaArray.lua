@@ -46,10 +46,6 @@ class "LuaArray" {
         self.length = length
     end;
 
-    __len = function(self)
-        return self.length
-    end;
-
     ---@Override
     __tostring = function(self)
         local strList = {}
