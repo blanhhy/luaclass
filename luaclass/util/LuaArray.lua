@@ -5,6 +5,14 @@ if not class then
     require "luaclass"
 end
 
+local isJIT = namespace.lua.jit and true or false
+local table_new, table_clear
+
+if isJIT then
+    table_new = require "table.new"
+    table_clear = require "table.clear"
+end
+
 local type = type
 local tostring = tostring
 local Int = math.floor
@@ -249,10 +257,17 @@ class "LuaArray" {
     end;
 
     clear = function(self)
+        if isJIT then
+            table_clear(self, true) -- 保留元表
+            self.__class = LuaArray -- 重绑class
+            self.length = 0 -- 重置length
+            return self
+        end
         for i = 1, self.length do
             self[i] = nil
         end
         self.length = 0
+        return self
     end;
 
     ---@static
@@ -262,11 +277,23 @@ class "LuaArray" {
     create = function(length, value)
         if nil == value then value = 0 end
         length = LuaArray.chkidx(length, math.huge)
-        local arr = LuaArray:__new()
+
+        local arr
+
+        if isJIT then
+            arr = table_new(length, 2)
+            arr.__class = LuaArray
+            setmetatable(arr, LuaArray)
+        else
+            arr = LuaArray:__new()
+        end
+
+        arr.length = length
+
         for i = 1, length do
             arr[i] = value
         end
-        arr.length = length
+
         return arr
     end;
 
