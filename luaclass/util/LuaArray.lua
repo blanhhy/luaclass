@@ -59,6 +59,15 @@ class "LuaArray" {
         return '{'..table.concat(strList, ", ")..'}'
     end;
 
+    copy = function(self)
+        local copy = LuaArray:__new()
+        for i = 1, self.length do
+            copy[i] = self[i]
+        end
+        copy.length = self.length
+        return copy
+    end;
+
     append = function(self, value)
         if nil == value then
             error("Cannot add nil into a LuaArray", 2)
@@ -109,12 +118,15 @@ class "LuaArray" {
         if nil == value then
             error("non-nil value expected.", 2)
         end
-        local indexs = {}
+        local indexs = LuaArray:__new()
+        local count = 0
         for i = 1, self.length do
             if value == self[i] then
-                indexs[#indexs+1] = i
+                count = count + 1
+                indexs[count] = i
             end
         end
+        indexs.length = count
         return indexs
     end;
 
