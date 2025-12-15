@@ -225,6 +225,15 @@ class "LuaArray" {
 
         return slice
     end;
+
+    -- 获取值的集合, 顺便包含第一次出现的索引
+    values = function(self)
+        local values = {}
+        for i = self.length, 1, -1 do
+            values[self[i]] = i
+        end
+        return values
+    end;
 }
 
 -- 让切片语法更简洁
