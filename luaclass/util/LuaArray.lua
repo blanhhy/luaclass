@@ -12,13 +12,13 @@ local remove = table.remove
 
 class "LuaArray" {
     ---@static
-    checkEnabled = true;
-    
+    chkidxEnabled = true;
+
     ---@static
     ---@param lim integer
     ---@return integer index
     chkidx = function(index, lim)
-        if not LuaArray.checkEnabled then return index end
+        if not LuaArray.chkidxEnabled then return index end
         local err = (
             (type(index) ~= "number" or Int(index) ~= index) and
             ("<integer> expected, got <%s>."):format(isinstance(index))
@@ -26,7 +26,7 @@ class "LuaArray" {
             (index < 1 or index > lim) and
             "Array index out of range"
         )
-        if err then error(err, 2) end
+        if err then error(err, 3) end
         return index
     end;
 
@@ -176,7 +176,7 @@ class "LuaArray" {
         end
         self.length = length + count
     end;
-    
+
     ---@param i? integer
     ---@param j? integer
     reverse = function(self, i, j)
@@ -189,6 +189,34 @@ class "LuaArray" {
         end
         return self
     end;
+
+    ---@param i? number
+    ---@param j? number
+    ---@param step? number
+    sub = function(self, i, j, step)
+        i = i and (type(i)=="number" and i or error("<number?> expected", 2)) or 1
+        j = j and (type(j)=="number" and j or error("<number?> expected", 2)) or self.length
+        step = step and (type(step)=="number" and step or error("<number?> expected", 2)) or 1
+
+        if i < 0 then i = self.length + 1 + i end
+        if j < 0 then j = self.length + 1 + j end
+
+        local slice = LuaArray:__new() -- 内部构造函数, 为了下面手动初始化
+        local count = 0
+
+        for o = i, j, step do
+            count = count + 1
+            slice[count] = self[o]
+        end
+
+        slice.length = count
+
+        return slice
+    end;
 }
+
+-- 让切片语法更简洁
+-- eg: slice = arr(1, 3)
+LuaArray.__call = LuaArray.sub
 
 return LuaArray
