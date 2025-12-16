@@ -27,7 +27,7 @@ local _ENV = namespace.use()
 -- using并不是一个全局函数, 而是namespace.use返回的_ENV中特有的函数
 using(namespace.Game.Deltarune)
 
--- import导入对象到本地_ENV中, 语法为import "[lua.]命名空间.对象名"
+-- import导入对象到本地_ENV中, 语法为import "命名空间.对象名"
 -- 同样的, import也不是全局函数, 只有命名空间环境中才有
 import "lua._G.print";
 import "lua._G.pairs";
