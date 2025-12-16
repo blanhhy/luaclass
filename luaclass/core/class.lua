@@ -94,7 +94,8 @@ namespace.new("lua.class.anonymous", weaken({}, 'kv'))
 local mm_names = {
   "__add", "__sub", "__mul", "__div", "__idiv", "__mod", "__pow",
   "__unm", "__band", "__bor", "__bxor", "__bnot", "__shl", "__shr",
-  "__concat", "__len", "__eq", "__lt", "__le", "__call", "__gc"
+  "__concat", "__len", "__eq", "__lt", "__le", "__call", "__gc",
+  "__tostring"
 }
 
 
@@ -133,7 +134,6 @@ function luaclass:__new(...)
     __ns_name   = ns_name;
     __class     = self;
     __new       = Object.__new; -- 这个方法比较常用
-    __tostring  = Object.__tostring;
   }
 
   cls.__index = cls
