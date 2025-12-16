@@ -4,6 +4,10 @@
 ---@class _G
 local _G = _G
 
+---@alias Object {__class:luaclass, [any]:any} luaclass 对象
+---@alias luaclass {__classname:string, [any]:any} luaclass 类对象
+---@alias class luaclass|type 类型, 可能是 luaclass 类对象或 Lua 类型字符串
+
 namespace = require "luaclass.core.namespace"
 decl      = require "luaclass.share.declare"
 
@@ -21,17 +25,19 @@ namespace.ffi       = require "ffi"
 namespace.jit       = require "jit"
 
 ---@param name? string 类名 (传入空串或缺省则为匿名, 实际类名随机)
----@return table
+---@return luaclass|fun(...:luaclass):luaclass
 function class(name) end
 
 isinstance = require "luaclass.inherit.isinstance"
 super      = require "luaclass.inherit.super"
 
--- 基本元类
+-- 基本元类, 可以创建类实例或获取任意对象的类型, 所有元类应当继承自此类
+---@overload fun(obj:any):class
+---@overload fun(name?:string, bases:luaclass[], tbl:table):luaclass
 luaclass = {}
+luaclass.__class = luaclass
 luaclass.__classname = "luaclass"
 luaclass.__ns_name = "lua.class"
-luaclass.__class = luaclass
 luaclass.defaultns = "lua.class"
 luaclass.typedef = "luaclass"
 
