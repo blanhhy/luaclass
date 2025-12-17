@@ -1,6 +1,5 @@
 require "luaclass"
-require "tablex"
--- tablex 是我的另一个实用的模块, 目前版本稳定无变动
+require "luaclass.util.LuaArray"
 
 -- 本文件演示多继承的具体用法, 边界情况, 以及一些错误的用法
 
@@ -27,7 +26,7 @@ class "D"(B, C) {
 
 local d = D()
 d:foo() -- 输出 "D foo"
-table.print(D.__mro) -- 输出 { D, B, C, A, Object}
+print(LuaArray(D.__mro)) -- 输出 {D, B, C, A, Object}
 super(d):foo() -- 输出 "B foo"
 
 
@@ -41,8 +40,8 @@ class "Y"(Z) {}
 class "M"(X, Y) {}
 class "N"(Y, X) {}
 
-table.print(M.__mro) --> { M, X, Y, Z, Object }
-table.print(N.__mro) --> { N, Y, X, Z, Object }
+print(LuaArray(M.__mro)) --> {M, X, Y, Z, Object}
+print(LuaArray(N.__mro)) --> {N, Y, X, Z, Object}
 
 -- class "O"(M, N) {}
 -- 将会拒绝创建 O
@@ -69,9 +68,9 @@ class "J"(E, F) {}
 class "K"(F, G) {}
 class "L"(G, H) {}
 
-table.print(J.__mro) --> { J, E, F, A, B, C, O, Object }
-table.print(K.__mro) --> { K, F, G, B, C, D, O, Object }
-table.print(L.__mro) --> { L, G, H, C, D, A, O, Object }
+print(LuaArray(J.__mro)) --> {J, E, F, A, B, C, O, Object}
+print(LuaArray(K.__mro)) --> {K, F, G, B, C, D, O, Object}
+print(LuaArray(L.__mro)) --> {L, G, H, C, D, A, O, Object}
 
 xpcall(function()
   class "M"(J, K, L) {}
