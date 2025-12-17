@@ -58,6 +58,7 @@ local Object   = {
   isInstanceOf = isinstance;
   getClass     = function(self) return self.__class end;
   toString     = _G.tostring;
+  is           = _G.rawequal;
 } -- 根类
 
 luaclass.__mro   = {luaclass, Object, n=2, lv={1, 1, n=2}}
