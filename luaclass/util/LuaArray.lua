@@ -380,6 +380,35 @@ class "LuaArray" {
         end
         return self
     end;
+
+    max = function(self)
+        local max = self[1]
+        if self.length < 2 then return max end
+        for i = 2, self.length do
+            max = max < self[i] and self[i] or max
+        end
+        return max
+    end;
+
+    min = function(self)
+        local min = self[1]
+        if self.length < 2 then return min end
+        for i = 2, self.length do
+            min = min > self[i] and self[i] or min
+        end
+        return min
+    end;
+
+    count = function(self, value)
+        if self.length == 0 or nil == value then return 0 end
+        local count = 0
+        for i = 1, self.length do
+            if value == self[i] then
+                count = count + 1
+            end
+        end
+        return count
+    end;
 }
 
 -- 让切片语法更简洁
