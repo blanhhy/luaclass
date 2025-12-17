@@ -25,7 +25,7 @@ namespace.ffi       = require "ffi"
 namespace.jit       = require "jit"
 
 ---@param name? string 类名 (传入空串或缺省则为匿名, 实际类名随机)
----@return luaclass|fun(...:luaclass):luaclass
+---@return luaclass|function
 function class(name) end
 
 isinstance = require "luaclass.inherit.isinstance"

@@ -60,6 +60,7 @@ class "LuaArray" {
 
     -- 构造方法
     -- 由于 jit 情况下有预分配空间的需求, 所以直接重写了 __new, 没有用 __init
+    -- 可以从参数列表或已有的数组来创建数组, 也可以创建空数组
     ---@Override
     ---@Classmethod
     __new = function(cls, ...)
