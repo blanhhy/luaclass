@@ -29,7 +29,6 @@ namespace.jit       = require "jit"
 function class(name) end
 
 isinstance = require "luaclass.inherit.isinstance"
-super      = require "luaclass.inherit.super"
 
 -- 基本元类, 可以创建类实例或获取任意对象的类型, 所有元类应当继承自此类
 ---@overload fun(obj:any):class

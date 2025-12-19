@@ -4,7 +4,7 @@ local weaken = require "luaclass.share.weaktb"
 local _G, type, setmetatable
     = _G, type, setmetatable
 
-local super = weaken({
+local Super = weaken({
   __index = function(proxy, k)
     local cls   = proxy.__class -- 子类
     local field = index(cls, k) -- 从 mro 中找到这个字段
@@ -34,17 +34,19 @@ local super = weaken({
 
 -- 以某个对象的身份访问它超类上的成员
 -- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self
-return function(obj)
+local function super(obj)
   if not obj then
     local _, self
     if _G.debug then _, self = _G.debug.getlocal(2, 1) end -- 尝试获取函数第一参数, 即 self
     obj = self or _G.error("no object provided.", 2) -- 如果没有，抛出一个错误
   end
 
-  super[obj] = super[obj] or setmetatable({
-    self     = obj;
-    __class  = obj.__class;
-  }, super)
+  Super[obj] = Super[obj] or setmetatable({
+    self       = obj;
+    __class    = obj.__class;
+  }, Super)
 
-  return super[obj]
+  return Super[obj]
 end
+
+return super
