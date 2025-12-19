@@ -113,12 +113,13 @@ print(z1 + z2)  --> 4 + 6i
 [repo:luaclass]
 ├── demo/
 │   ├── abstract_class.lua
-│   ├── classic_luaoop.lua
 │   ├── complex_number.lua
 │   ├── game_roles.lua
 │   ├── multi_inherit.lua
 │   ├── type_checking.lua
 │   ├── use_namespace.lua
+│   ├── util_Class.lua
+│   ├── util_LuaArray.lua
 │   └── util_String.lua
 ├── luaclass/
 │   ├── core/
@@ -132,9 +133,11 @@ print(z1 + z2)  --> 4 + 6i
 │   │   └── super.lua
 │   ├── share/
 │   │   ├── declare.lua
-│   │   └── weaktb.lua
+│   │   ├── randstr.lua
+│   │   └── weaktbl.lua
 │   ├── util/
 │   │   ├── Class.lua
+│   │   ├── LuaArray.lua
 │   │   └── String.lua
 │   ├── main.lua
 │   └── init.lua
@@ -143,9 +146,9 @@ print(z1 + z2)  --> 4 + 6i
 ```
 
 1. `core`：核心模块，包含类定义、基类、元类、命名空间、声明、抽象类、类型检查等功能。
-2. `inherit`：继承相关模块，包含索引、超类调用、MRO、isinstance等功能。
-3. `share`：模块级共享模块，包含声明、弱表等功能。
-4. `util`：提供给用户的可选工具类。
+2. `inherit`：继承相关模块，包含计算和利用 MRO 来查找字段、调用方法、判断类型等。
+3. `share`：模块级共享模块，包含声明、共享弱表、产生随机类名等功能。
+4. `util`：提供给用户的可选工具类，如经典 OOP 风格的 Class, 功能便利的 LuaArray 等。
 5. `main.lua`：主入口文件，整理了所有模块的接口。
 6. `init.lua`：初始化文件，将模块接口导入到全局环境。
 
