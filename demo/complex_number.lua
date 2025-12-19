@@ -112,3 +112,5 @@ print(z1 / z2) -- 输出: 0.44+0.08i
 print(#z2) -- 输出: 5.0
 
 print(Complex(1)) -- 输出: 1
+
+print(2 + z1) -- 输出: 3+2i
