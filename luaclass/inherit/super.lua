@@ -1,12 +1,10 @@
 local index  = require "luaclass.inherit.index"
+local weaken = require "luaclass.share.weaktb"
 
 local _G, type, setmetatable
     = _G, type, setmetatable
 
-
--- 以某个对象的身份访问它超类上的成员
--- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self, 否则必须传入对象
-local super = setmetatable({
+local super = weaken({
   __index = function(proxy, k)
     local cls   = proxy.__class -- 子类
     local field = index(cls, k) -- 从 mro 中找到这个字段
@@ -31,27 +29,22 @@ local super = setmetatable({
   __tostring = function(proxy)
     return ("<super: %s, %s>"):format(proxy.__class, proxy.self)
   end;
-}, {
-  __mode = 'k'; -- 弱键模式，对象销毁时清理代理表
+}, 'k'); -- 弱键模式，对象销毁时清理代理表
 
-  __call = function(super, obj)
-    if not obj then
-      local _, self
-      if _G.debug then _, self = _G.debug.getlocal(2, 1) end -- 没有传入对象，尝试获取函数第一参数, 即 self
-      obj = self or _G.error("no object provided.", 2) -- 如果没有，抛出一个错误
-    end
 
-    super[obj] = super[obj] or setmetatable({
-      self     = obj;
-      __class  = obj.__class;
-    }, super)
+-- 以某个对象的身份访问它超类上的成员
+-- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self
+return function(obj)
+  if not obj then
+    local _, self
+    if _G.debug then _, self = _G.debug.getlocal(2, 1) end -- 尝试获取函数第一参数, 即 self
+    obj = self or _G.error("no object provided.", 2) -- 如果没有，抛出一个错误
+  end
 
-    return super[obj]
-  end;
+  super[obj] = super[obj] or setmetatable({
+    self     = obj;
+    __class  = obj.__class;
+  }, super)
 
-  __tostring = function()
-    return "super"
-  end;
-})
-
-return super
+  return super[obj]
+end
