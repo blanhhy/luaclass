@@ -21,7 +21,6 @@ return function (cls, bases)
 
   local baseCount                = #bases -- 基类数量
   local baseMROs                 = {}     -- 各基类的MRO
-  local baseMROsLength           = {}     -- 各基类的MRO长度
   local MROsNextIndextoMerge     = {}     -- 各基类MRO的合并进度
   local baseMROsLengthEachLevels = {}     -- 储存每个基类的MRO中每一层长度的二维表
 
@@ -40,17 +39,15 @@ return function (cls, bases)
     if not base then baseCount = i break end
     local baseMRO = base.__mro
 
-    -- 获取每个基类的MRO和长度
+    -- 获取每个基类的MRO
     baseMROs[i] = baseMRO
-    baseMROsLength[i] = baseMRO.n
     MROsNextIndextoMerge[i] = 1 -- 还没有开始合并, 所以下一个位置是1
 
     -- 获取每个基类的MRO中每一层长度的信息
-    local baseMROLengthEachLevels = baseMRO.lv
-    baseMROsLengthEachLevels[i] = baseMROLengthEachLevels
+    baseMROsLengthEachLevels[i] = base.__mro.lv
 
     -- 计算最大继承深度
-    local baseMRO_Depth = baseMROLengthEachLevels.n -- 继承深度, 就是MRO的层级数
+    local baseMRO_Depth = base.__mro.lv.n -- 继承深度, 就是MRO的层级数
     maxDepth = baseMRO_Depth >= maxDepth
       and baseMRO_Depth
       or maxDepth
@@ -59,7 +56,6 @@ return function (cls, bases)
   -- 声明一些局部变量
   local currMRO             -- 当前正在处理的MRO
   local classGroupCount     -- 组数量：当前MRO在当前层级中包含的超类数量
-  local currMROLength       -- 当前MRO长度
   local nextIndextoMerge    -- 当前MRO在开始合并这一层时, 应该从这个位置开始
   local nextIndexonMerged   -- 预计在合并完这一层之后, 下次应该从这个位置开始
   local currClass           -- 当前正在处理的超类
@@ -74,9 +70,8 @@ return function (cls, bases)
       classGroupCount = baseMROsLengthEachLevels[whichBase][whichLevel]
 
       if classGroupCount then
-        local currMROLength = baseMROsLength[whichBase]
-        local nextIndextoMerge = MROsNextIndextoMerge[whichBase]
-        local nextIndexonMerged = nextIndextoMerge + classGroupCount
+        nextIndextoMerge = MROsNextIndextoMerge[whichBase]
+        nextIndexonMerged = nextIndextoMerge + classGroupCount
 
         -- 开始合并当前定位到的超类组
         for i = nextIndextoMerge, nextIndexonMerged - 1 do
