@@ -183,6 +183,8 @@ print()
 
 -- 不等号会先比较长度, 长度不同则比较第一个不等元素
 
+xpcall(function()
+
 -- 可以和普通 table 对象比较
 print("和普通 table 对象比较:")
 local arrC = {1, 2, 3, 4, 5}
@@ -191,7 +193,11 @@ print("   arrA > arrC? " .. tostring(arrA > arrC))
 print("   arrB == arrC? " .. tostring(arrB == arrC))
 
 -- 比较数组的时候至少有一个是 LuaArray 对象即可, 普通的 table 数组也可以参与
--- 其他的类型不行 (除非它们也有元方法且处于优先地位)
+-- 其他的类型不行 (除非它们也有元方法且处于优先地位), lua5.2 以下版本另说
+
+end, function()
+    print("lua5.2以下版本比较运算符须操作数拥有相同元方法")
+end)
 
 -- 还有其他的方法比如 pop弹出, copy 复制, 等等, 都比较简单
 -- 复制数组也可以直接用构造函数实现
