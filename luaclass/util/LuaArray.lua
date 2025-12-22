@@ -468,9 +468,6 @@ class "LuaArray" {
 
     -- 重载 == 符号, 比较数组内容是否相同
     __eq = function(left, right)
-        if type(left) ~= "table" or type(right) ~= "table" then -- 允许LuaArray和普通的数组比较
-            return false
-        end
         local len1, len2 = left.length or #left, right.length or #right
         if len1 ~= len2 then return false end
         for i = 1, len1 do
