@@ -8,7 +8,8 @@ local conf = {} -- 一些模块配置
 
 -- 变量名是否允许 unicode 字符
 -- 默认取决于解释器的实际实现, 可以修改
-conf.unicode_supported = not not (load or loadstring)("local 〇=0")
+local load = tonumber(_VERSION:sub(-3, -1)) > 5.1 and load or loadstring
+conf.unicode_supported = pcall(load, "local 〇=0")
 
 -- 是否允许任意命名空间环境访问 lua, 如直接 io.open 而不是 lua.io.open
 -- 为了贴合 Lua 使用习惯, 默认开启
