@@ -5,7 +5,7 @@
 -- 提供统一的, 带类型的空值占位符, 用于模拟声明变量
 
 -- local _G = _G
-local weaken = require "luaclass.share.weaktb"
+local weaken = require "luaclass.share.weaktbl"
 
 local str, num, bool, func, tbl, used, co, any;
 

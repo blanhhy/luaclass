@@ -30,7 +30,7 @@ local namespace = {lua = lua, ["lua._G"] = _G}     -- 根命名空间容器
 local spacename = {[lua] = "lua", [_G] = "lua._G"} -- 命名空间名称映射
 local protected = {lua = true, ["lua._G"] = true}  -- 禁止删除的命名空间
 
-local weaken = _G.require "luaclass.share.weaktb"
+local weaken = _G.require "luaclass.share.weaktbl"
 weaken(spacename, 'k')
 weaken(protected, 'k')
 

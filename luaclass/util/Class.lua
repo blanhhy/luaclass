@@ -14,7 +14,8 @@ local Class
 Class = class "Class"(luaclass) {
     defaultns = luaclass.defaultns;
 
-    ---@Override,@Classmethod
+    ---@Override
+    ---@Classmethod
     __new = function(cls, name, ...)
         local bases
         local t = type(name)

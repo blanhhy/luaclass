@@ -1,5 +1,5 @@
 local index  = require "luaclass.inherit.index"
-local weaken = require "luaclass.share.weaktb"
+local weaken = require "luaclass.share.weaktbl"
 
 local _G, type, setmetatable
     = _G, type, setmetatable
@@ -42,8 +42,8 @@ local function super(obj)
   end
 
   Super[obj] = Super[obj] or setmetatable({
-    self       = obj;
-    __class    = obj.__class;
+    self     = obj;
+    __class  = obj.__class;
   }, Super)
 
   return Super[obj]
