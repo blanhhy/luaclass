@@ -39,7 +39,9 @@ local function new_instance(cls, ...)
   return inst
 end
 
-local globalns = namespace.find(_G)
+local globalns = namespace.find(_G) -- 全局命名空间的路径
+
+-- 内置类
 
 local luaclass = {
   __classname  = "luaclass";
@@ -70,10 +72,22 @@ Object.__class   = luaclass
 setmetatable(luaclass, luaclass)
 setmetatable(Object, luaclass)
 
+-- 给这两个类定义类型符号
 local typedef = declare.typedef
 
 typedef(luaclass, "luaclass")
 typedef(Object, "Object")
+
+
+-- 另一种常见的实例化风格
+---@Classmethod
+function Object:new(...)
+  if rawget(self.__class, "__call") ~= new_instance then
+    _G.error(("Object '%s' has no instantiate behavior, make sure it is a class.")
+      :format(self), 2)
+  end
+  return new_instance(self, ...)
+end
 
 
 -- luaclass 模块命名空间
