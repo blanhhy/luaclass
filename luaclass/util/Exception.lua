@@ -17,6 +17,10 @@ class "Exception" {
     __tostring = function(self)
         return self.fmt:format(self:getClass(), self.msg)
     end;
+
+    format = function(self)
+
+    end;
 }
 
 class "ArgException"(Exception) {
