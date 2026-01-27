@@ -2,10 +2,11 @@ if not luaclass then
     require "luaclass"
 end
 
-local _G, type, select, setmetatable, isinstance
-    = _G, type, select, setmetatable, isinstance
+---@class _G
+local _G, type, select, isinstance
+    = _G, type, select, isinstance
 
-_G.throw  = _G.error
+_G.throw = _G.error
 
 class "Exception" {
     fmt = "%s: %s";
@@ -60,8 +61,8 @@ class "TypeError"(Exception) {
         
         local typ = type(...)
         
-        if typ == "number" then return self:__init_args(...)
-        elseif typ == "table" then return self:__init_kvargs(...)
+        if     typ == "number" then return self:__init_args(...)
+        elseif typ == "table"  then return self:__init_kvargs(...)
         elseif typ == "string" then self.msg = (...)
         end
     end;
