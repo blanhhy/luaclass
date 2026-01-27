@@ -1,10 +1,9 @@
---
 -- Luaclass 纯lua的基于类OOP机制
 
-local _G, type, next, select, rawget, setmetatable
-    = _G, type, next, select, rawget, setmetatable
+local _G, type, next, select, rawget, setmetatable, require, error
+    = _G, type, next, select, rawget, setmetatable, require, error
 
-local require = _G.require
+if _ENV then _ENV = nil end -- 防止意外的 _G 访问
 
 local isinstance = require("luaclass.inherit.isinstance")
 local mergeMROs  = require("luaclass.inherit.mro")
@@ -16,52 +15,56 @@ local weaken     = require("luaclass.share.weaktbl")
 local randstr    = require("luaclass.share.randstr")
 
 
--- 类的实例化
--- 是元类的__call方法
+---@param cls table luaclass 类对象
+---@param ... any?  传递给构造函数的参数
+---@return table obj 该类的一个实例
+---这个方法是元类默认的 __call 方法  
+---当类被调用时, 实际上是调用这个方法来创建实例  
 local function new_instance(cls, ...)
-
-  -- 抽象类不能实例化！
   if rawget(cls, "abstract") then
-    _G.error(("Cannot instantiate abstract class '%s'")
-      :format(cls), 2)
+    error((
+      "Cannot instantiate abstract class '%s'"
+    ):format(cls), 2)
   end
 
-  local inst = cls:__new(...) -- 调用构造函数
-  local init = cls.__init -- 如果有初始化函数，调用它
-  if init then init(inst, ...) end
+  local inst = cls:__new(...)
+  local init = cls.__init
+  
+  if type(init) == "function" then
+    init(inst, ...)
+  end
 
-  -- 如果声明了字段, 检查是否正确初始化
   if cls.declare then
     local ok, err = checktool.isInitialized(cls, inst)
-    if not ok then _G.error(err, 2) end
+    if not ok then error(err, 2) end
   end
 
   return inst
 end
 
-local globalns = namespace.find(_G) -- 全局命名空间的路径
 
--- 内置类
+
+-- 手动创建 luaclass 元类 和 Object 根类
 
 local luaclass = {
   __classname  = "luaclass";
   __ns_name    = "lua.class";
   __tostring   = function(self) return self.__classname or "<anonymous>" end;
   __call       = new_instance;
-  __index      = fromsuper;
-  defaultns    = globalns;
-} -- 基本元类
+  __index      = fromsuper; -- 实现继承 & 多态的关键
+  defaultns    = "lua._G";
+}
 
 local Object   = {
   __classname  = "Object";
   __ns_name    = "lua.class";
-  __tostring   = function(self) return ("<%s object>"):format(self.__class.__classname) end;
+  __tostring   = function(self) return ("<%s object>"):format(self.__class) end;
   __new        = function(self) return setmetatable({__class = self}, self) end;
-  isInstanceOf = isinstance;
   getClass     = function(self) return self.__class end;
+  isInstance   = isinstance;
   toString     = _G.tostring;
   is           = _G.rawequal;
-} -- 根类
+}
 
 luaclass.__mro   = {luaclass, Object, n=2, lv={1, 1, n=2}}
 Object.__mro     = {Object, n=1, lv={1, n=1}}
@@ -79,23 +82,10 @@ typedef(luaclass, "luaclass")
 typedef(Object, "Object")
 
 
--- 另一种常见的实例化风格
----@Classmethod
-function Object:new(...)
-  if rawget(self.__class, "__call") ~= new_instance then
-    _G.error(("Object '%s' has no instantiate behavior, make sure it is a class.")
-      :format(self), 2)
-  end
-  return new_instance(self, ...)
-end
-
-
--- luaclass 模块命名空间
-local class_NS = namespace.new(
-"lua.class", {
-  luaclass = luaclass;
-  Object   = Object;
-
+-- 创建 class 命名空间
+namespace.new("lua.class", {
+  luaclass   = luaclass;
+  Object     = Object;
   isinstance = isinstance;
   namespace  = namespace;
   decl       = declare;
@@ -106,6 +96,7 @@ local class_NS = namespace.new(
 namespace.new("lua.class.anonymous", weaken({}, 'kv'))
 
 
+-- Lua 元方法名
 local mm_names = {
   "__add", "__sub", "__mul", "__div", "__idiv", "__mod", "__pow",
   "__unm", "__band", "__bor", "__bxor", "__bnot", "__shl", "__shr",
@@ -113,13 +104,13 @@ local mm_names = {
   "__tostring"
 }
 
-
--- 创建一个类
+---@classmethod
+---创建对象或获取对象类型
 function luaclass:__new(...)
   local arg_count = select('#', ...)
 
   if arg_count == 0 then
-    _G.error("bad argument #1 to 'luaclass:__new' (value expected)", 3)
+    error("bad argument #1 to 'luaclass:__new' (value expected)", 3)
   end
 
   -- 单参数调用时，返回对象的类
@@ -148,46 +139,43 @@ function luaclass:__new(...)
     __classname = name;
     __ns_name   = ns_name;
     __class     = self;
-    __new       = Object.__new; -- 这个方法比较常用
+    __new       = Object.__new;
+    new         = new_instance; -- 同时提供经典的实例化风格, clazz:new()
   }
 
   cls.__index = cls
 
   -- 复制所有成员到类中
-  if tbl then
-    for k, v in next, tbl do
-      cls[k] = v
-    end
-  end
+  if tbl then for k, v in next, tbl do
+    cls[k] = v
+  end end
 
   local as_abc = cls.abstract -- 是否作为抽象类创建
   local as_type = cls.typedef -- 是否作为可声明的类型创建
 
   -- 计算MRO
   local mro, err = mergeMROs(cls, bases)
-  if err then _G.error(err, 3) end
+  if err then error(err, 2) end
 
   cls.__mro = mro
   setmetatable(cls, self) -- 元类是类的元表
 
-  -- 由于 Lua 不从 __index 中查找元方法
-  -- 所以要继承元方法只好从基类中复制
+  -- Lua 不从 __index 中查找元方法, 只好直接复制了
   local mm_name, base_mm
 
   for i = 1, #mm_names do
     mm_name = mm_names[i]
     base_mm = not rawget(cls, mm_name) and cls[mm_name]
-    if base_mm then
-      cls[mm_name] = base_mm
-    end
+    if base_mm then cls[mm_name] = base_mm end
   end
 
-  -- 如果基类抽象而子类不抽象
-  -- 检查子类是否实现了所有的方法, 否则无法创建类
-  if not as_abc and nil ~= cls.abstract then
+  cls.abstract = nil -- 这会让下面的 cls.abstract 访问到基类的 abstract 属性
+
+  -- 子类未声明抽象但基类抽象, 需要检查抽象方法实现没有
+  if not as_abc and cls.abstract then
     local ok, err = checktool.isImplemented(cls, bases)
-    if not ok then _G.error(err, 3) end
-    cls.abstract = false
+    if not ok then error(err, 2) end
+    cls.abstract = false -- 必须设置成 false 而不是 nil, 要阻断对子类的影响
   end
 
   -- 注册类到对应的命名空间
@@ -196,9 +184,10 @@ function luaclass:__new(...)
 
   -- 给类定义一个类型名, 可用于以后的字段声明
   if as_type then
-    local typename = type(as_type) == "string" and as_type or (ns_name.."::"..name)
-    typedef(cls, typename)
-    cls.typedef = typename
+    cls.typedef = type(as_type) == "string"
+    and as_type
+    or (ns_name.."::"..name)
+    typedef(cls, cls.typedef)
   end
 
   return cls
@@ -207,24 +196,27 @@ end
 
 -- 类创建器，用于处理语法
 local function class(name, bases)
-  if not name or name == '' then
+  if not name or name == '' then -- 匿名类
     name = "lua.class.anonymous::Class_"
-        .. randstr(10) -- 匿名类
+        .. randstr(10)
   end
 
-  return function(tbl, ...) -- 捕获成员表
+  -- 先假设为 class "name" {} 语法
+  -- 捕获成员表
+  return function(tbl, ...)
     tbl = tbl or {}
 
-    -- 如果获取到的是一个类
+    -- 处理 class "name" (bases) {} 语法
     if tbl.__classname then
       local firstBase = tbl
       return class(name, {firstBase, ...}) -- 捕获基类
     end
 
-    local mcls = tbl.metaclass or luaclass -- 支持指定元类，默认 luaclass
+    -- 获取元类指定, 默认为 luaclass
+    local mcls = tbl.metaclass or luaclass
     tbl.metaclass = nil
 
-    -- 声明模式记录静态声明的字段
+    -- 声明模式下记录声明的字段
     if tbl.declare then
       tbl.__declared = checktool.getDeclared(tbl, bases)
     end
@@ -234,7 +226,7 @@ local function class(name, bases)
       tbl.__abstract_methods = checktool.getAbstractMethods(tbl, bases)
     end
 
-    return mcls(name, bases, tbl) -- 调用元类创建类
+    return new_instance(mcls, name, bases, tbl)
   end
 end
 
