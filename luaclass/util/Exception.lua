@@ -53,7 +53,6 @@ class "TypeError"(Exception) {
 
     __init = function(self, ...)
         if not (...) then return end
-        self.msg = "bad argument"
         
         if select("#", ...) > 1 then
             return self:__init_args(...)
@@ -72,18 +71,26 @@ class "TypeError"(Exception) {
             self.msg = kvargs.msg
             return
         end
-        local pos, expected, actual = kvargs.pos, kvargs.expected, kvargs.actual
-        if kvargs.got then actual = isinstance(kvargs.got) end
-        self:__init_args(pos, expected, actual)
+        if not kvargs.actual and kvargs.got then
+            kvargs.actual = isinstance(kvargs.got)
+        end
+        return self:__init_args(
+            kvargs.pos,
+            kvargs.expected,
+            kvargs.actual)
     end;
 
     __init_args = function(self, pos, expected, actual)
-        self.pos = pos
+        self.pos      = pos
         self.expected = expected
-        self.actual = actual
-        if pos then self.msg = self.msg.. (" #%d"):format(pos) end
+        self.actual   = actual
+
+        self.msg = "bad argument"
+
+        if pos      then self.msg = self.msg.. (" #%d"):format(pos) end
         if expected then self.msg = self.msg.. (", %s expected"):format(expected) end
-        if actual then self.msg = self.msg.. (", got %s"):format(actual) end
+        if actual   then self.msg = self.msg.. (", got %s"):format(actual) end
+        
         self.msg = self.msg.. "."
     end;
 }
