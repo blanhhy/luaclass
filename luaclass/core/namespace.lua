@@ -6,9 +6,11 @@
 
 local conf = {} -- 一些模块配置
 
+conf.luaver = tonumber(_VERSION:sub(5)) ---@type number 解释器版本号
+
 -- 变量名是否允许 unicode 字符
 -- 默认取决于解释器的实际实现, 可以修改
-local load = tonumber(_VERSION:sub(-3, -1)) > 5.1 and load or loadstring
+local load = conf.luaver > 5.1 and load or loadstring
 conf.unicode_supported = pcall(load, "local 〇=0")
 
 -- 是否允许任意命名空间环境访问 lua, 如直接 io.open 而不是 lua.io.open
@@ -19,26 +21,33 @@ conf.allow_access_lua = true
 conf.auto_using_G = false
 
 
+---@alias namespace table 任意表都可以作为命名空间
+
 local _M
-local _G = _G -- Lua 的全局命名空间
-local type, next, rawget, rawset, setmetatable = _G.type, _G.next, _G.rawget, _G.rawset, _G.setmetatable
-local setfenv = _G.setfenv
+local _G = _G ---@type namespace Lua 的全局命名空间
+local type, next, rawget, rawset, setmetatable, error
+    = type, next, rawget, rawset, setmetatable, error
 
-local lua = {_G = _G} -- Lua 根命名空间
+local setfenv = conf.luaver <= 5.1 and _G.setfenv
 
-local namespace = {lua = lua, ["lua._G"] = _G}     -- 根命名空间容器
-local spacename = {[lua] = "lua", [_G] = "lua._G"} -- 命名空间名称映射
-local protected = {lua = true, ["lua._G"] = true}  -- 禁止删除的命名空间
+
+local lua = {_G = _G} ---@type namespace Lua 根命名空间
+
+local namespace = {lua = lua, ["lua._G"] = _G}     ---@type table<string, namespace> 根命名空间容器
+local spacename = {[lua] = "lua", [_G] = "lua._G"} ---@type table<namespace, string> 命名空间名称映射
+local protected = {lua = true, ["lua._G"] = true}  ---@type table<string, boolean> 禁止删除的命名空间
 
 local weaken = _G.require "luaclass.share.weaktbl"
 weaken(spacename, 'k')
 weaken(protected, 'k')
 
---[[ -- 通用逻辑:
-local weak_MT = {__mode = 'k'}
+-- 如果有人需要在别处使用这个库的话,
+-- 可以删除上面的 weaken, 然后取消下面的注释 (文件中不止这一处)
+
+--[[ local weak_MT = {__mode = 'k'}
 setmetatable(spacename, weak_MT)
-setmetatable(protected, weak_MT)
-]]
+setmetatable(protected, weak_MT) ]]
+
 
 -- 尝试注册一些 Lua 标准库
 local function prequire(name)
@@ -73,11 +82,11 @@ setmetatable(package.loaded, {__index = namespace})
 
 
 -- 辅助函数：检查合法标识符
-local keywords = {
+conf.keywords = {
   "and", "break", "do", "else", "elseif", "end", "false", "for",
-  "function", "goto", "if", "in", "local", "nil", "not", "or",
-  "repeat", "return", "then", "true", "until", "while"
-} -- Lua 关键字
+  "function", "if", "in", "local", "nil", "not", "or", "repeat",
+  "return", "then", "true", "until", "while", conf.luaver > 5.1 and "goto" or nil
+} -- Lua 关键字 (如果解释器支持更多关键字, 可以自行添加)
 
 local function check_identifier(str)
   if str == '' then return false end -- 不能为空
@@ -85,8 +94,8 @@ local function check_identifier(str)
   if str:match("^%d") then return false end -- 首字符不能是数字
 
   -- 不能是保留词
-  for i = 1, #keywords do
-    if str == keywords[i] then
+  for i = 1, #conf.keywords do
+    if str == conf.keywords[i] then
       return false
     end
   end
@@ -113,9 +122,12 @@ function ns_env_MT:__index(name)
   return namespace[name] -- 允许全名访问其他命名空间
 end
 
--- 从命名空间中导入对象
-local function import_from_ns(ns_name, name)
-  if not ns_name or not name then return nil end
+---从命名空间中导入对象
+---@param name     string 要导入的对象名称
+---@param ns_name? string 要导入的命名空间名称
+local function import_from_ns(name, ns_name)
+  if not name then return nil end
+  ns_name = ns_name or "lua"
 
   local ns = namespace[ns_name]
   local obj = ns and ns[name]
@@ -151,7 +163,7 @@ local function ns_use()
     local ns_name, name = fullname:match("^(.+)%.([^%.]+)$")
 
     if name ~= '*' then
-      local obj, err = import_from_ns(ns_name, name)
+      local obj, err = import_from_ns(name, ns_name)
       if not obj then error(err, 2) end
       ns_env[name] = obj
       return obj
@@ -180,7 +192,8 @@ local function ns_use()
 end
 
 
--- 创建命名空间
+---创建命名空间
+---@return namespace
 local function ns_new(...)
   local ns_name, ns = ...
   local nargs = select('#', ...)
@@ -281,7 +294,9 @@ local function ns_new(...)
 end
 
 
--- 删除命名空间
+---删除命名空间记录
+---@param ns namespace|string
+---@return namespace? deleted
 local function ns_del(ns)
 
   -- 同时支持名称和对象作为参数
@@ -307,28 +322,37 @@ local function ns_del(ns)
     rawset(base_ns, ns_shortname, nil)
   end
 
-  return ns -- 弹出命名空间对象
+  return ns
 end
 
 
--- 获取命名空间对象和查找命名空间路径
--- get 识别命名空间的全名或表对象, 返回表对象或nil
--- find 只识别命名空间表对象, 返回全名或nil
-local function ns_get(id)return(id)and(namespace[id]or(spacename[id]and(id)or(nil)))or(nil)end
-local function ns_find(ns)return(ns)and(spacename[ns])or(nil)end
+---获取命名空间对象
+---@param id string|namespace
+---@return namespace? ns_obj
+local function ns_get(id)
+  return (id                  -- 没有参数直接返回nil
+  and  (namespace[id]         -- 首先假设是名称查找表, 有就返回
+    or (spacename[id] and id) -- 否则假设是对象查找表, 有就返回
+    or nil)                   -- 都没找到, 返回nil
+    or nil)
+end
 
+---查找命名空间路径
+---@param ns namespace
+---@return string? ns_name
+local function ns_find(ns)
+  if ns then return spacename[ns] end
+end
 
--- 根命名空间迭代器
+---根命名空间迭代器
+---@param ns_name string?
 local function ns_next(_, ns_name)
-  if ns_name and not namespace[ns_name] then
-    return nil, "not a namespace"
-  end
   return next(namespace, ns_name)
 end
 
 
 -- 导出接口
-_M = setmetatable({
+_M = {
   use  = ns_use;
   new  = ns_new;
   del  = ns_del;
@@ -337,12 +361,18 @@ _M = setmetatable({
   iter = ns_next;
   load = import_from_ns;
   conf = conf;
-}, {
-  __index = namespace;
+}
+
+local _M_mt = {
   __call = function (_, ns_name)
     return function (ns) return ns_new(ns_name, ns) end
   end;
-})
+}
 
+setmetatable(_M, _M_mt)
+
+-- 由于lua_ls插件的bug (疑似), use函数会被错误推断为__index表的值类型
+-- 目前暂且只能这么写, 为了阻止插件识别到__index, 什么时候解决了再改回来
+_M_mt.__index = namespace
 
 return _M
