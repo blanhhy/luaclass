@@ -5,5 +5,6 @@ require "luaclass.util.Class"
 require "luaclass.util.String"
 require "luaclass.util.LuaArray"
 require "luaclass.util.Range"
+require "luaclass.util.Exception"
 
 range = namespace.lua.class.Range
