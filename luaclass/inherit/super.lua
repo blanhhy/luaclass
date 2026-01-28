@@ -31,9 +31,15 @@ local Super = weaken({
   end;
 }, 'k'); -- 弱键模式，对象销毁时清理代理表
 
+---@class Super
+---@field self Object
+---@field __class luaclass
+---@field [any] any
 
--- 以某个对象的身份访问它超类上的成员
+-- 以某个对象的身份访问它超类上的成员  
 -- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self
+---@param obj? Object
+---@return Super
 local function super(obj)
   if not obj then
     local _, self

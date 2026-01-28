@@ -9,7 +9,13 @@ local _G = _G
 具体来说, 就是将每个基类的 MRO 按层级进行分块, 然后逐层合并这些分块
 ]]
 
--- 合并基类的 MRO
+---方法解析顺序表, 带长度和每层长度信息
+---@alias MRO {[integer]: luaclass, n: integer, lv: {[integer]: integer, n: integer}}
+
+---合并基类的 MRO
+---@param cls   luaclass
+---@param bases luaclass[]
+---@return MRO?, string? errMsg
 return function (cls, bases)
   if not bases or not bases[1] then
     return {cls, n = 1, lv = {1, n = 1}}

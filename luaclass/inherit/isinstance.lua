@@ -3,10 +3,14 @@
 
 local type = type
 
--- 判断或获取所属类型
+---判断或获取所属类型
+---@param obj any
+---@param cls class
+---@return boolean
+---@overload fun(obj:any):class
 local function isinstance(obj, cls)
   if cls == "any" then return true end
-  
+
   local typ = type(obj)
   local obj_cls = (typ == "table" or typ == "string") and obj.__class
 

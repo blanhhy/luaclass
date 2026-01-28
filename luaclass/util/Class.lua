@@ -8,10 +8,8 @@ local randstr = require "luaclass.share.randstr"
 local __new   = luaclass.__new
 local type    = _G.type
 
-local Class
-
 -- 创建一个元类, 用于适配 lua 经典 OOP 语法
-Class = class "Class"(luaclass) {
+class "Class"(luaclass) {
     defaultns = luaclass.defaultns;
 
     ---@Override

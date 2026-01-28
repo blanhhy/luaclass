@@ -1,6 +1,9 @@
 local rawget = rawget
 
--- 依照MRO查找超类成员
+---依照MRO查找超类成员
+---@param self luaclass 类对象
+---@param name string   成员名
+---@return any
 return function(self, name)
   local mro = self.__mro
   local start = self == mro[1] and 2 or 1

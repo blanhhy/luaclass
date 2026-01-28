@@ -1,18 +1,12 @@
--- luaclass 导入助手，已适配 packagex 标准
-local _M = require "luaclass.main"
-local ep = _M.__export
+local G = _G ---@class _G
+local M = require "luaclass.main"
 
-local packagex = package.loaded.packagex
+G.class = M.class
+G.super = M.super
+G.decl  = M.decl
+G.namespace  = M.namespace
+G.isinstance = M.isinstance
+G.luaclass   = M.luaclass
+G.Object     = M.Object
 
-if packagex and packagex.inited then
-  __export = ep
-  else
-    local env = ep[1]
-    for k, v in next, ep do
-      if k ~= 1 then
-        env[k] = env[k] or v
-      end
-    end
-end
-
-return _M
+return M

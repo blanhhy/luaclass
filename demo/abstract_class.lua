@@ -72,7 +72,7 @@ Sparrow flys.
 
 -- 错误示范:
 xpcall(function()
-  class "Dog" (Animal) {}
+    class "Dog" (Animal) {}
 end, print)
 -- 报错, 因为 Dog 类既没有声明为抽象类也没有实现基类的 eat 和 move 方法
 -- class 'Dog' is not abstract and does not override abstract method 'eat'
