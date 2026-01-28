@@ -42,9 +42,9 @@ end
 for k, v in next, stringlib do String[k] = v end
 
 -- 必要的实例字段和方法
-stringlib.__class      = String
-stringlib.isInstanceOf = _M.isinstance
-stringlib.getClass     = Object.getClass
+stringlib.__class    = String
+stringlib.isInstance = _M.isinstance
+stringlib.getClass   = Object.getClass
 
 setmetatable(String, luaclass)
 rawset(_G, "String", String)

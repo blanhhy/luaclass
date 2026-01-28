@@ -12,10 +12,13 @@ local function isinstance(obj, cls)
   if cls == "any" then return true end
 
   local typ = type(obj)
+  if cls == typ then return true end
+
+  -- 对于可以 index 的类型尝试获取一下 class
   local obj_cls = (typ == "table" or typ == "string") and obj.__class
 
   if not cls then return obj_cls or typ end -- 单参数时返回类型
-  if not obj_cls then return typ == cls end -- Lua 基本类型兼容
+  if not obj_cls then return false end
 
   local mro = obj_cls.__mro -- 认为子类实例也是基类类型
 
@@ -28,6 +31,7 @@ local function isinstance(obj, cls)
   for i = 2, mro.n - 1 do
     if cls == mro[i] then return true end
   end
+
   return false
 end
 

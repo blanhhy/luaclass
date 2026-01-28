@@ -11,10 +11,9 @@ print(str:getClass()) -- String
 print(luaclass(str))  -- String
 print(type(str))      -- string
 
-print(str:isInstanceOf(String))  -- true
-print(str:isInstanceOf(Object))  -- true
-print(isinstance(str, "string")) -- false
--- 唯一的遗憾是isinstance不会把字符串当作原生类型了
+print(str:isInstance(String))    -- true
+print(str:isInstance(Object))    -- true
+print(isinstance(str, "string")) -- true
 
 print(String{1, 2, 3}) -- {1, 2, 3}
 print(String.valueOf(123)) -- 123
