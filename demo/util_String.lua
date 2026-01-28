@@ -6,7 +6,7 @@ require "luaclass.util.String"
 -- String类的签名是lua._G::String(lua.class::Object)
 -- String类这个对象是字符串原本的元表, 它在原版lua就存在
 
-local str = "hello"
+local str = "hello" ---@cast str String
 print(str:getClass()) -- String
 print(luaclass(str))  -- String
 print(type(str))      -- string
