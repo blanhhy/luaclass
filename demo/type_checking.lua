@@ -4,7 +4,7 @@ require "luaclass"
 
 -- 首先定义一个Tank类
 class "Tank" {
-    declare = true; -- 开启声明模式'
+    declare = true; -- 开启声明模式
 
     -- 声明一些字段
     name   = decl.string; -- 坦克名字, 类型为string
@@ -13,9 +13,9 @@ class "Tank" {
     damage = decl.number; -- 坦克攻击力, 类型为number
 
     --[[
-    即使不开启声明模式, 也可以声明字段, 但是在开启声明模式后:
-    1. 声明的字段必须在构造函数中初始化为非nil值, 否则会报错.
-    2. 声明的字段类型必须与初始化的值类型一致, 否则会报错.
+    即使不开启声明模式, 也可以用decl, 声明模式的作用是:
+    - 声明的字段必须在构造函数中初始化为非nil值, 否则报错.
+    - 声明的字段类型必须与初始化的值类型一致, 否则报错.
     ]]
 
     __init = function(self, name, health, armor, damage)
@@ -43,15 +43,15 @@ class "Tank" {
 
     heal = function(self, amount)
         -- 这里可以用type, 也可以用isinstance
-        -- isinstance是兼容基本类型的, 参数2传入type字符串即可
+        -- isinstance是兼容基本类型的, 参数#2传入type字符串即可
         if not isinstance(amount, "number") then
             error "Heal amount is not a number!";
             return;
         end;
 
         --[[
-        说到isinstance有必要讲一下, 有的人可能喜欢用obj:isInstanceOf(cls)来调用,
-        这个方法继承自Object类, 和isinstance其实是同一个函数, 一般情况下每个类都一样
+        说到isinstance有必要讲一下, 有的人可能会喜欢用obj:isInstance(cls)来调用,
+        这个方法继承自Object类, 和isinstance是同一个函数, 一般情况下每个类都一样
         但这样要求obj本身是一个luaclass的对象, 因此isinstance能应对更多的情况.
 
         另一个类型函数是luaclass(), luaclass作为元类和Python中的type有类似的功能.

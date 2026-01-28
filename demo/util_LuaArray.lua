@@ -144,8 +144,9 @@ local concatenatedArray = smallArray1 .. smallArray2
 print("   {1,2,3} .. {4,5,6} = " .. tostring(concatenatedArray))
 print()
 
--- 连接符号和 extend 方法不一样, .. 会返回新的数组, 不会修改原数组
--- 和 concat 也不一样, concat 是 table 库的 concat, 是用来拼接字符串的
+-- 注意:
+-- 连接操作符和 extend 方法不一样, .. 会返回新的数组, 而 extend 就地修改原数组
+-- 和 concat 也不一样, concat 是 table 库的 concat, 是用来把数组拼接成字符串的
 
 -- 最大值和最小值
 print("统计操作:")
@@ -161,8 +162,8 @@ local countResult = randomArray:count(targetValue)
 print("   count(" .. targetValue .. "): 出现 " .. countResult .. " 次")
 print()
 
--- 最值方法使用 lua 的大于小于符号, 会受元方法影响
--- 需要保证数组内的元素都互相可比
+-- 最值方法使用 lua 的大于小于符号, 保证有元方法的对象能正常比较
+-- 使用最值方法需要确保数组内的元素都互相可比
 
 -- 数组比较
 print("数组比较:")
