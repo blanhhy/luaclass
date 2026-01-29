@@ -78,7 +78,10 @@ local mm_names = {
 
 ---创建类对象
 ---@classmethod
----@overload fun(self:luaclass, name?:string, bases?:luaclass[], tbl?:table):luaclass
+---@param name?  string
+---@param bases? luaclass[]
+---@param tbl?   table
+---@return luaclass
 function luaclass:__new(name, bases, tbl)
     local ns_name
 
