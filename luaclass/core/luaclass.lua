@@ -11,6 +11,7 @@ local mergeMROs  = require("luaclass.inherit.mro")
 local namespace  = require("luaclass.core.namespace")
 local checktool  = require("luaclass.core.checktool")
 local Object     = require("luaclass.core.Object")
+local randstr    = require("luaclass.share.randstr")
 local typedef    = require("luaclass.share.declare").typedef
 
 ---@class luaclass
@@ -75,32 +76,25 @@ local mm_names = {
     "__tostring"
 }
 
----创建对象或获取对象类型
+---创建类对象
 ---@classmethod
----@overload fun(self:luaclass, val:any):class
----@overload fun(self:luaclass, name:string, bases:luaclass[], tbl:table):luaclass
-function luaclass:__new(...)
-    local arg_count = select('#', ...)
+---@overload fun(self:luaclass, name?:string, bases?:luaclass[], tbl?:table):luaclass
+function luaclass:__new(name, bases, tbl)
+    local ns_name
 
-    if arg_count == 0 then
-        error("bad argument #1 to 'luaclass:__new' (value expected)", 3)
+    if not name or name == '' then -- 匿名类
+        ns_name = "lua.class.anonymous"
+        name = "Class_".. randstr(10)
     end
-
-    -- 单参数调用时，返回对象的类
-    if arg_count == 1 then
-        local obj = ...
-        local typ = type(obj)
-        return (typ == "table" or typ == "string") and obj.__class or typ
-    end
-
-    local name, bases, tbl = ...
-
+    
     if not bases or not bases[1] then
         bases = {Object} -- 默认继承 Object
     end
 
     -- 获取在名字中指定的命名空间
-    local ns_name, name = name:match("^([^:]-):*([^:]+)$")
+    if not ns_name then
+        ns_name, name = name:match("^([^:]-):*([^:]+)$")
+    end
 
     if not ns_name or ns_name == '' then
         ns_name = self.defaultns -- 默认命名空间
@@ -171,7 +165,14 @@ end
 ---这个方法是元类默认的 __call 方法  
 ---当类被调用时, 实际上是调用这个方法来创建实例  
 function luaclass:__call(...)
-    if rawget(self, "abstract") then
+    if self == luaclass and select('#', ...) == 1 then
+        local obj, typ = (...), type(...)
+        return (typ == "table" or typ == "string") 
+        and obj.__class
+        or  typ
+    end
+
+    if self ~= luaclass and rawget(self, "abstract") then
         error((
         "Cannot instantiate abstract class '%s'"
         ):format(self), 2)
@@ -180,7 +181,7 @@ function luaclass:__call(...)
     local inst = self:__new(...)
     local init = self.__init
 
-    if type(init) == "function" then
+    if init and type(init) == "function" then
         init(inst, ...)
     end
 
