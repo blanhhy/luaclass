@@ -23,8 +23,8 @@ local luaclass = {
     defaultns    = "lua._G";
 }
 
----@alias type_class luaclass|type       含类对象的类型
----@alias type_check luaclass|type|"any" 可以检查的类型
+---@alias type_class luaclass|type       包含类的类型
+---@alias type_check luaclass|type|"any" 可检查的类型
 
 ---@class type_mismatch
 ---@field [1]      integer
