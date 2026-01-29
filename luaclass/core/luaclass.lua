@@ -23,6 +23,9 @@ local luaclass = {
     defaultns    = "lua._G";
 }
 
+---@alias type_class luaclass|type       含类对象的类型
+---@alias type_check luaclass|type|"any" 可以检查的类型
+
 ---@class type_mismatch
 ---@field [1]      integer
 ---@field [2]      table|type
@@ -32,12 +35,10 @@ local luaclass = {
 ---@field actual   table|type
 ---@field unpack fun(t: type_mismatch): (integer, table|type, table|type)
 
----@alias class luaclass|type|"any" 包括 luaclass 类和 Lua 基本类型, 以及 any
-
 ---@static
 ---@param ... any 成对的 “值, 类型” 参数列表
 ---@return type_mismatch?
----@overload fun(v1:any, T1?:class, v2?:any, T2?:class, v3?:any, T3?:class, ...:any): type_mismatch?
+---@overload fun(v1:any, T1?:type_check, v2?:any, T2?:type_check, v3?:any, T3?:type_check, ...:any): type_mismatch?
 function luaclass.match(...)
     local n = select('#', ...)
     if n == 0 then return end
@@ -82,6 +83,10 @@ local mm_names = {
 ---@param bases? luaclass[]
 ---@param tbl?   table
 ---@return luaclass
+---@overload fun(self: luaclass, name: string, bases: luaclass[], tbl: table): luaclass
+---@overload fun(self: luaclass, name: string, bases: luaclass[]): luaclass
+---@overload fun(self: luaclass, name: string): luaclass
+---@overload fun(self: luaclass): luaclass
 function luaclass:__new(name, bases, tbl)
     local ns_name
 
@@ -163,10 +168,11 @@ function luaclass:__new(name, bases, tbl)
 end
 
 
+---这个方法是元类默认的 __call 方法  
+---当类被调用时, 实际上是调用这个方法来创建实例
 ---@param ... any      传递给构造函数的参数
 ---@return Object obj  该类的一个实例
----这个方法是元类默认的 __call 方法  
----当类被调用时, 实际上是调用这个方法来创建实例  
+---@overload fun(val: any):type_class
 function luaclass:__call(...)
     if self == luaclass and select('#', ...) == 1 then
         local obj, typ = (...), type(...)
