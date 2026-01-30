@@ -57,8 +57,9 @@ class "Game::CombatUnit" {
 -- 玩家角色类（多继承）
 class "Game::Player" (GameObject, CombatUnit) {
   __init = function(self, name, hp)
-    GameObject.__init(self, name) -- 有时候, 需要显式指定需要的父类
-    -- super(self):__init(name) -- 也可以使用super(self):__init(name)
+    super(self):__init(name) -- 调用父类构造函数
+    -- 如果多个父类都有构造函数, 还可以选择想要的版本
+    -- super(self, GameObject):__init(name)
     self.hp = hp or 100
     self.damage = 10
   end;
