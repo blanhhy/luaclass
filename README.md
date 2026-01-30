@@ -113,19 +113,22 @@ print(z1 + z2)  --> 4 + 6i
 [repo:luaclass]
 ├── demo/
 │   ├── abstract_class.lua
+│   ├── classic_luaoop.lua
 │   ├── complex_number.lua
 │   ├── game_roles.lua
 │   ├── multi_inherit.lua
 │   ├── type_checking.lua
 │   ├── use_namespace.lua
-│   ├── util_Class.lua
+│   ├── util_Exception.lua
 │   ├── util_LuaArray.lua
 │   └── util_String.lua
 ├── luaclass/
 │   ├── core/
-│   │   ├── class.lua
+│   │   ├── checktool.lua
+│   │   ├── creater.lua
+│   │   ├── luaclass.lua
 │   │   ├── namespace.lua
-│   │   └── checktool.lua
+│   │   └── Object.lua
 │   ├── inherit/
 │   │   ├── index.lua
 │   │   ├── isinstance.lua
@@ -137,8 +140,11 @@ print(z1 + z2)  --> 4 + 6i
 │   │   └── weaktbl.lua
 │   ├── util/
 │   │   ├── Class.lua
+│   │   ├── Exception.lua
 │   │   ├── LuaArray.lua
-│   │   └── String.lua
+│   │   ├── Range.lua
+│   │   ├── String.lua
+│   │   └── init.lua
 │   ├── main.lua
 │   └── init.lua
 ├── README.md
