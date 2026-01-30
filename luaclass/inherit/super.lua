@@ -1,17 +1,17 @@
 local index  = require "luaclass.inherit.index"
 local weaken = require "luaclass.share.weaktbl"
 
-local _G, type, setmetatable
-    = _G, type, setmetatable
+local type, setmetatable, error
+    = type, setmetatable, error
 
 local Super = weaken({
   __index = function(proxy, k)
-    local cls   = proxy.__class -- 子类
-    local field = index(cls, k) -- 从 mro 中找到这个字段
+    local cls   = proxy.__class
+    local field = index(cls, k, false, proxy.__super)
 
     -- 超类中没有这个字段
     if not field then
-      _G.error(("No field '%s' existing in superclass of '%s'"):format(k, cls), 2)
+      error(("No field '%s' existing in superclass of '%s'"):format(k, cls), 2)
     end
 
     -- 是一个方法
@@ -34,22 +34,27 @@ local Super = weaken({
 ---@class Super
 ---@field self Object
 ---@field __class luaclass
+---@field __super luaclass?
 ---@field [any] any
+
+local getlocal = debug and debug.getlocal
 
 -- 以某个对象的身份访问它超类上的成员  
 -- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self
 ---@param obj? Object
+---@param cls? luaclass
 ---@return Super
-local function super(obj)
+local function super(obj, cls)
   if not obj then
     local _, self
-    if _G.debug then _, self = _G.debug.getlocal(2, 1) end -- 尝试获取函数第一参数, 即 self
-    obj = self or _G.error("no object provided.", 2) -- 如果没有，抛出一个错误
+    if getlocal then _, self = getlocal(2, 1) end -- 尝试获取函数第一参数, 即 self
+    obj = self or error("no object provided.", 2) -- 如果没有，抛出一个错误
   end
 
   Super[obj] = Super[obj] or setmetatable({
     self     = obj;
     __class  = obj.__class;
+    __super  = cls; -- 可以指定想要的超类
   }, Super)
 
   return Super[obj]
