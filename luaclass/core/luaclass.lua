@@ -18,7 +18,7 @@ local typedef    = require("luaclass.share.declare").typedef
 local luaclass = {
     __classname  = "luaclass";
     __ns_name    = "lua.class";
-    __tostring   = function(self) return self.__classname or "<anonymous>" end;
+    __tostring   = function(self) return rawget(self, "__classname") or "<anonymous>" end;
     __index      = fromsuper; -- 实现继承 & 多态的关键
     defaultns    = "lua._G";
 }
@@ -124,6 +124,20 @@ function luaclass:__new(name, bases, tbl)
         cls[k] = v
     end end
 
+    -- Lua 不从 __index 中查找元方法, 因此也要复制
+    local mm_name, base_mm
+
+    for i = 1, #mm_names do
+        mm_name = mm_names[i]
+        if not tbl or not tbl[mm_name] then
+            for j = 1, #bases do
+                base_mm = bases[j][mm_name]
+                if base_mm then break end
+            end
+            cls[mm_name] = base_mm or nil
+        end
+    end
+
     local as_abc = cls.abstract -- 是否作为抽象类创建
     local as_type = cls.typedef -- 是否作为可声明的类型创建
 
@@ -133,15 +147,6 @@ function luaclass:__new(name, bases, tbl)
 
     cls.__mro = mro
     setmetatable(cls, self) -- 元类是类的元表
-
-    -- Lua 不从 __index 中查找元方法, 只好直接复制了
-    local mm_name, base_mm
-
-    for i = 1, #mm_names do
-        mm_name = mm_names[i]
-        base_mm = not rawget(cls, mm_name) and cls[mm_name]
-        if base_mm then cls[mm_name] = base_mm end
-    end
 
     cls.abstract = nil -- 这会让下面的 cls.abstract 访问到基类的 abstract 属性
 

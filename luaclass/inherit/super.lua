@@ -7,11 +7,12 @@ local type, setmetatable, error
 local Super = weaken({
   __index = function(proxy, k)
     local cls   = proxy.__class
+    local base  = proxy.__super
     local field = index(cls, k, false, proxy.__super)
 
     -- 超类中没有这个字段
     if not field then
-      error(("No field '%s' existing in superclass of '%s'"):format(k, cls), 2)
+      error(("No field '%s' existing in superclass of '%s' (start with '%s')"):format(k, cls, base), 2)
     end
 
     -- 是一个方法
@@ -34,7 +35,7 @@ local Super = weaken({
 ---@class Super
 ---@field self Object
 ---@field __class luaclass
----@field __super luaclass?
+---@field __super luaclass
 ---@field [any] any
 
 local getlocal = debug and debug.getlocal
@@ -54,7 +55,7 @@ local function super(obj, cls)
   Super[obj] = Super[obj] or setmetatable({
     self     = obj;
     __class  = obj.__class;
-    __super  = cls; -- 可以指定想要的超类
+    __super  = cls or obj.__mro[2]; -- 可以指定想要的超类
   }, Super)
 
   return Super[obj]

@@ -14,9 +14,8 @@ return function(self, name, include_curr, wait_target)
   local item, occurred = nil, false
 
   for i = start, mro.n do
-    if not occurred then
-      occurred = mro[i] == wait_target
-    else
+    occurred = occurred or mro[i] == wait_target
+    if occurred then
       item = rawget(mro[i], name)
       if item ~= nil then break end
     end
