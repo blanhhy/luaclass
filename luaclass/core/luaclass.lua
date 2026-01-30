@@ -28,12 +28,12 @@ local luaclass = {
 
 ---@class type_mismatch
 ---@field [1]      integer
----@field [2]      table|type
----@field [3]      table|type
+---@field [2]      type_class
+---@field [3]      type_class
 ---@field pos      integer
----@field expected table|type
----@field actual   table|type
----@field unpack fun(t: type_mismatch): (integer, table|type, table|type)
+---@field expected type_class
+---@field actual   type_class
+---@field unpack fun(t: type_mismatch): (integer, type_class, type_class)
 
 ---@static
 ---@param ... any 成对的 “值, 类型” 参数列表
@@ -172,7 +172,7 @@ end
 ---当类被调用时, 实际上是调用这个方法来创建实例
 ---@param ... any      传递给构造函数的参数
 ---@return Object obj  该类的一个实例
----@overload fun(val: any):type_class
+---@overload fun(_: luaclass, val: any):type_class
 function luaclass:__call(...)
     if self == luaclass and select('#', ...) == 1 then
         local obj, typ = (...), type(...)
