@@ -6,12 +6,11 @@ local type, setmetatable, error
 
 local Super = weaken({
   __index = function(proxy, k)
-    local cls   = proxy.__class
-    local field = index(cls, k, false, proxy.__super)
+    local field = index(proxy.self, k, proxy.__class)
 
     if not field then
       error(("No field '%s' existing in superclass of '%s' (start with '%s')")
-      :format(k, cls, proxy.__super), 2)
+      :format(k, proxy.self, proxy.__class), 2)
     end
 
     -- 如果是一个方法
@@ -19,7 +18,7 @@ local Super = weaken({
       local function proxyMethod(self, ...)
         return field(self == proxy and proxy.self or self, ...) -- 对象代理方法
       end
-      proxy[k] = proxyMethod -- 缓存这个闭包到代理表中
+      proxy[field] = proxyMethod -- 缓存代理方法
       return proxyMethod
     end
 
@@ -34,7 +33,6 @@ local Super = weaken({
 ---@class Super
 ---@field self Object
 ---@field __class luaclass
----@field __super luaclass
 ---@field [any] any
 
 local getlocal = debug and debug.getlocal
@@ -51,13 +49,15 @@ local function super(obj, cls)
     obj = self or error("no object provided.", 2) -- 如果没有，抛出一个错误
   end
 
-  Super[obj] = Super[obj] or setmetatable({
+  cls = cls or obj.__mro[2]
+
+  Super[obj] = Super[obj] or weaken({}, 'k')
+  Super[obj][cls] = Super[obj][cls] or setmetatable({
     self     = obj;
-    __class  = obj.__class;
-    __super  = cls or obj.__mro[2]; -- 可以指定想要的超类
+    __class  = cls;
   }, Super)
 
-  return Super[obj]
+  return Super[obj][cls]
 end
 
 return super

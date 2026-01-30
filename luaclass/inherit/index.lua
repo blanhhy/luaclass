@@ -1,14 +1,13 @@
 local rawget = rawget
 
 ---依照MRO查找超类成员
----@param self luaclass 类对象
----@param name string   成员名
----@param include_curr? boolean 是否包含当前类
+---@param self Object 任意对象
+---@param name string 成员名
 ---@param wait_target? luaclass 是否等待目标类
 ---@return any
-return function(self, name, include_curr, wait_target)
+return function(self, name, wait_target)
   local mro = self.__mro
-  local start = include_curr and 1 or 2
+  local start = self ~= mro[1] and 1 or 2
 
   wait_target = wait_target or mro[start]
   local item, occurred = nil, false

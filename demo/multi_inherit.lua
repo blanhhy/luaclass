@@ -28,6 +28,7 @@ local d = D()
 d:foo() -- 输出 "D foo"
 print(LuaArray(D.__mro)) -- 输出 {D, B, C, A, Object}
 super(d):foo() -- 输出 "B foo"
+super(d, C):foo() -- 输出 "C foo"
 
 
 --------
@@ -75,10 +76,9 @@ print(LuaArray(L.__mro)) --> {L, G, H, C, D, A, O, Object}
 xpcall(function()
   class "M"(J, K, L) {}
 end, print)
---[[
-错误信息:
+
+--[[ 错误信息:
 Cannot create class 'M' due to MRO conflict. (in bases: D, A)
 Processing traceback:
     [ M -> J -> K -> L -> E -> F -> G -> H -> A@9 -> B -> C -> D@12 -> D@13 -> A@14 ]
-    interrupt at MRO of superclass 'L', level #3
-]]
+    interrupt at MRO of superclass 'L', level #3 ]]
