@@ -125,9 +125,8 @@ function luaclass:__new(name, bases, tbl)
     end end
 
     -- Lua 不从 __index 中查找元方法, 因此也要复制
-    local mm_name, base_mm
-
     for i = 1, #mm_names do
+        local mm_name, base_mm
         mm_name = mm_names[i]
         if not tbl or not tbl[mm_name] then
             for j = 1, #bases do

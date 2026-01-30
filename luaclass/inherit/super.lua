@@ -7,15 +7,14 @@ local type, setmetatable, error
 local Super = weaken({
   __index = function(proxy, k)
     local cls   = proxy.__class
-    local base  = proxy.__super
     local field = index(cls, k, false, proxy.__super)
 
-    -- 超类中没有这个字段
     if not field then
-      error(("No field '%s' existing in superclass of '%s' (start with '%s')"):format(k, cls, base), 2)
+      error(("No field '%s' existing in superclass of '%s' (start with '%s')")
+      :format(k, cls, proxy.__super), 2)
     end
 
-    -- 是一个方法
+    -- 如果是一个方法
     if type(field) == "function" then
       local function proxyMethod(self, ...)
         return field(self == proxy and proxy.self or self, ...) -- 对象代理方法
