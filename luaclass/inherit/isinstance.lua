@@ -28,7 +28,7 @@ local function isinstance(obj, cls)
   end
 
   -- 遍历 MRO 链上剩下的类
-  for i = 2, mro.n - 1 do
+  for i = 2, #mro - 1 do
     if cls == mro[i] then return true end
   end
 
