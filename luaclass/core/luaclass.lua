@@ -23,6 +23,9 @@ local luaclass = {
     defaultns    = "lua._G";
 }
 
+luaclass.__class = luaclass
+luaclass.__mro   = {luaclass, Object}
+
 ---@alias type_class luaclass|type       包含类的类型
 ---@alias type_check luaclass|type|"any" 可检查的类型
 

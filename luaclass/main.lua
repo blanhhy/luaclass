@@ -10,10 +10,6 @@ local weak       = require "luaclass.share.weaktbl"
 -- luaclass 和 Object 的一部分是交叉依赖的
 -- 所以在这个文件里面手动设置了依赖关系
 
-luaclass.__mro  = {luaclass, Object, n=2, lv={1, 1, n=2}}
-Object.__mro    = {Object, n=1, lv={1, n=1}}
-
-luaclass.__class = luaclass
 Object.__class   = luaclass
 
 setmetatable(luaclass, luaclass)

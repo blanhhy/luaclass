@@ -25,7 +25,7 @@ String.__classname = "String"
 String.__ns_name   = "lua._G"
 String.typedef     = "string"
 String.__class     = luaclass
-String.__mro       = {String, Object, n=2, lv={1, 1, n=2}}
+String.__mro       = {String, Object}
 String.valueOf     = tostring
 
 ---@Override

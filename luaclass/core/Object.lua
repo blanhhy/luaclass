@@ -33,4 +33,6 @@ local Object   = {
     is           = rawequal;
 }
 
+Object.__mro     = {Object}
+
 return Object
