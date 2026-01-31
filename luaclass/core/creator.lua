@@ -5,9 +5,6 @@ local checktool  = require "luaclass.core.checktool"
 local luaclass   = require "luaclass.core.luaclass"
 local randstr    = require "luaclass.share.randstr"
 
----@alias MenberReceiver fun(tbl:table):luaclass
----@alias BasesReceiver  fun(tbl:luaclass, ...:luaclass):MenberReceiver
-
 ---类创建器，用于处理语法
 ---@param name? string
 ---@param bases nil

@@ -9,14 +9,15 @@ local weaken = require "luaclass.share.weaktbl"
 
 local str, num, bool, func, tbl, used, co, any;
 
-str  = function()end
-num  = function()end
-bool = function()end
-func = function()end
-tbl  = function()end
-used = function()end
-co   = function()end
-any  = function()end
+str  = function()end ---@type placeholder
+num  = function()end ---@type placeholder
+bool = function()end ---@type placeholder
+func = function()end ---@type placeholder
+tbl  = function()end ---@type placeholder
+used = function()end ---@type placeholder
+co   = function()end ---@type placeholder
+any  = function()end ---@type placeholder
+
 
 local phs = weaken({
 	string   = str;
@@ -29,6 +30,7 @@ local phs = weaken({
 	any      = any;
 }, 'k')
 
+---@type table<placeholder, type_check>
 local types = weaken({
   [str]  = "string";
   [num]  = "number";
@@ -42,8 +44,18 @@ local types = weaken({
 
 local decl = {
   type = types; -- 通过占位符获取类型标志 (字符串或自定义的对象), eg: decl.type[decl.string] -> "string"
-  T = function(t)return(phs[t])end; -- 方便取用非变量名的key, eg: decl.T'Math::Vector3'
-  typedef = function(cls, name) -- 声明类型别名, eg: decl.typedef(namespace.class.MyString, 'MyString')
+  
+  ---方便取用非变量名的key, eg: decl.T'Math::Vector3'
+  ---@param t string
+  ---@return function
+  T = function(t)
+    return phs[t]
+  end;
+
+  ---声明类型别名, eg: decl.typedef(MyString, 'MyString')
+  ---@param cls type_class
+  ---@param name string
+  typedef = function(cls, name)
     local ph = function()end
     phs[name] = ph
     types[ph] = cls

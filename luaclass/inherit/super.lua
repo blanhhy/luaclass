@@ -30,11 +30,6 @@ local Super = weaken({
   end;
 }, 'k'); -- 弱键模式，对象销毁时清理代理表
 
----@class Super
----@field self Object
----@field __class luaclass
----@field [any] any
-
 local getlocal = debug and debug.getlocal
 
 -- 以某个对象的身份访问它超类上的成员  

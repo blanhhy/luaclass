@@ -26,18 +26,6 @@ local luaclass = {
 luaclass.__class = luaclass
 luaclass.__mro   = {luaclass, Object}
 
----@alias type_class luaclass|type       包含类的类型
----@alias type_check luaclass|type|"any" 可检查的类型
-
----@class type_mismatch
----@field [1]      integer
----@field [2]      type_class
----@field [3]      type_class
----@field pos      integer
----@field expected type_class
----@field actual   type_class
----@field unpack fun(t: type_mismatch): (integer, type_class, type_class)
-
 ---@static
 ---@param ... any 成对的 “值, 类型” 参数列表
 ---@return type_mismatch?

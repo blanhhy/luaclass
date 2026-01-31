@@ -1,16 +1,7 @@
 ---@meta
--- luaclass的符号文件 (不要导入)
 
-local G = _G ---@class _G
-local M = require "luaclass.main"
-
-class = M.class
-super = M.super
-decl  = M.decl
-namespace  = M.namespace
-isinstance = M.isinstance
-luaclass   = M.luaclass
-Object     = M.Object
+---@module "luaclass.core.namespace"
+namespace = {}
 
 namespace.string    = require "string"
 namespace.table     = require "table"
