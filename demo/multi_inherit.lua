@@ -27,6 +27,7 @@ class "D"(B, C) {
 local d = D()
 d:foo() -- 输出 "D foo"
 print(LuaArray(D.__mro)) -- 输出 {D, B, C, A, Object}
+
 super(d):foo() -- 输出 "B foo"
 super(d, C):foo() -- 输出 "C foo"
 
@@ -69,9 +70,9 @@ class "J"(E, F) {}
 class "K"(F, G) {}
 class "L"(G, H) {}
 
-print(LuaArray(J.__mro)) --> {J, E, F, A, B, C, O, Object}
-print(LuaArray(K.__mro)) --> {K, F, G, B, C, D, O, Object}
-print(LuaArray(L.__mro)) --> {L, G, H, C, D, A, O, Object}
+print(LuaArray(J.__mro)) --> {J, E, A, F, B, C, O, Object}
+print(LuaArray(K.__mro)) --> {K, F, B, G, C, D, O, Object}
+print(LuaArray(L.__mro)) --> {L, G, C, H, D, A, O, Object}
 
 xpcall(function()
   class "M"(J, K, L) {}
