@@ -2,6 +2,7 @@ require "luaclass"
 require "luaclass.util.LuaArray"
 
 -- 本文件演示多继承的具体用法, 边界情况, 以及一些错误的用法
+-- Luaclass 采用 C3 算法来实现多继承, 可以参考 https://www.python.org/download/releases/2.3/mro/
 
 --------
 
@@ -46,7 +47,8 @@ print(LuaArray(M.__mro)) --> {M, X, Y, Z, Object}
 print(LuaArray(N.__mro)) --> {N, Y, X, Z, Object}
 
 -- 将会拒绝创建 O
--- 因为M和N中X，Y的顺序是相反的
+-- 因为M和N中X, Y的顺序是相反的
+-- 这会导致尊重基类声明顺序和维持局部一致单调性原则冲突
 xpcall(function()
   class "O"(M, N) {}
 end, print)
