@@ -45,9 +45,15 @@ class "N"(Y, X) {}
 print(LuaArray(M.__mro)) --> {M, X, Y, Z, Object}
 print(LuaArray(N.__mro)) --> {N, Y, X, Z, Object}
 
--- class "O"(M, N) {}
 -- 将会拒绝创建 O
 -- 因为M和N中X，Y的顺序是相反的
+xpcall(function()
+  class "O"(M, N) {}
+end, print)
+
+--[[ 输出: 
+Cannot create class 'O' due to MRO conflict. (in bases: X, Y)
+Current merged MRO: [O, M, N] ]]
 
 
 --------
