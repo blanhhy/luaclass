@@ -1,7 +1,7 @@
 -- luaclass/inherit/mro.lua
 -- This file is a part of luaclass library.
 
-local tostring, concat, error = tostring, table.concat, error
+local tostring, concat = tostring, table.concat
 
 ---辅助函数, 寻找好表头
 ---@param mros {[integer]:luaclass, tail:table<luaclass, boolean>}[]
@@ -92,14 +92,13 @@ return function (cls, bases)
     
     if err then
       local clsname = cls.__classname or "unknown"
-      local mro_strs = {clsname}
-      for i = 2, #mro do
-        mro_strs[i] = tostring(mro[i])
-      end
-      return nil, err:format(clsname, concat(mro_strs, ", "))
+      local mro_str = {clsname}
+      for i = 2, #mro do mro_str[i] = tostring(mro[i]) end
+      return nil, err:format(clsname, concat(mro_str, ", "))
     end
 
     if not head then break end
+    
     mro[#mro + 1] = head
   end
 
