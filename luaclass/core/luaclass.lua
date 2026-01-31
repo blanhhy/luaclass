@@ -145,7 +145,7 @@ function luaclass:__new(name, bases, tbl)
 
     -- 计算MRO
     local mro, err = mergeMROs(cls, bases)
-    if err then error(err, 2) end
+    if err then error(err, 3) end
 
     cls.__mro = mro
     setmetatable(cls, self) -- 元类是类的元表
@@ -155,7 +155,7 @@ function luaclass:__new(name, bases, tbl)
     -- 子类未声明抽象但基类抽象, 需要检查抽象方法实现没有
     if not as_abc and cls.abstract then
         local ok, err = checktool.isImplemented(cls, bases)
-        if not ok then error(err, 2) end
+        if not ok then error(err, 3) end
         cls.abstract = false -- 必须设置成 false 而不是 nil, 要阻断对子类的影响
     end
 
