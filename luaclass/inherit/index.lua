@@ -12,7 +12,7 @@ return function(self, name, wait_target)
   wait_target = wait_target or mro[start]
   local item, occurred = nil, false
 
-  for i = start, mro.n do
+  for i = start, #mro do
     occurred = occurred or mro[i] == wait_target
     if occurred then
       item = rawget(mro[i], name)

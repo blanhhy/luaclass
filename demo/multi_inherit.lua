@@ -78,7 +78,5 @@ xpcall(function()
 end, print)
 
 --[[ 错误信息:
-Cannot create class 'M' due to MRO conflict. (in bases: D, A)
-Processing traceback:
-    [ M -> J -> K -> L -> E -> F -> G -> H -> A@9 -> B -> C -> D@12 -> D@13 -> A@14 ]
-    interrupt at MRO of superclass 'L', level #3 ]]
+Cannot create class 'M' due to MRO conflict. (in bases: A, F, G)
+Current merged MRO: [M, J, E, K, L] ]]
