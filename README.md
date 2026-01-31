@@ -113,7 +113,7 @@ print(z1 + z2)  --> 4 + 6i
 luaclass/
 ├── core/
 │   ├── checktool.lua
-│   ├── creater.lua
+│   ├── creator.lua
 │   ├── luaclass.lua
 │   ├── namespace.lua
 │   └── Object.lua
