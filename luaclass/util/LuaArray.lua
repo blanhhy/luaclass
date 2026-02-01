@@ -3,7 +3,7 @@ if not class then
 end
 
 local isJIT = namespace.lua.jit and true or false
-local is5_5 = _VERSION == "Lua 5.5"
+local is5_5 = _VERSION >= "Lua 5.5"
 local table_new, table_clear
 
 if isJIT then
