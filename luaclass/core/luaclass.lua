@@ -14,7 +14,7 @@ local Object     = require("luaclass.core.Object")
 local randstr    = require("luaclass.share.randstr")
 local typedef    = require("luaclass.share.declare").typedef
 
----@class luaclass
+---@class lua.class.luaclass : lua.class.Object
 local luaclass = {
     __classname  = "luaclass";
     __ns_name    = "lua.class";

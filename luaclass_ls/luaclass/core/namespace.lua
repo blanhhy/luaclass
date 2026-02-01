@@ -1,17 +1,29 @@
 ---@meta
+---@diagnostic disable: undefined-global
 
 ---@module "luaclass.core.namespace"
 namespace = {}
 
-namespace.string    = require "string"
-namespace.table     = require "table"
-namespace.math      = require "math"
-namespace.io        = require "io"
-namespace.os        = require "os"
-namespace.debug     = require "debug"
-namespace.coroutine = require "coroutine"
-namespace.package   = require "package"
-namespace.bit32     = require "bit32"
-namespace.utf8      = require "utf8"
-namespace.ffi       = require "ffi"
-namespace.jit       = require "jit"
+---@class lua
+namespace.lua           = {}
+
+namespace.lua._G        = _G ---@class _G
+namespace.lua.string    = string or require "string" or nil
+namespace.lua.table     = table  or require "table"  or nil
+namespace.lua.math      = math   or require "math"   or nil
+namespace.lua.io        = io     or require "io"     or nil
+namespace.lua.os        = os     or require "os"     or nil
+namespace.lua.debug     = debug  or require "debug"  or nil
+namespace.lua.bit32     = bit32  or require "bit32"  or nil
+namespace.lua.utf8      = utf8   or require "utf8"   or nil
+namespace.lua.ffi       = ffi    or require "ffi"    or nil
+namespace.lua.jit       = jit    or require "jit"    or nil
+namespace.lua.coroutine = coroutine or require "coroutine" or nil
+namespace.lua.package   = package   or require "package"   or nil
+
+
+---@param name string
+---@param ns?  namespace
+function namespace.new(name, ns)
+    namespace[name] = ns or {}
+end

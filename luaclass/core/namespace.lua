@@ -20,7 +20,6 @@ conf.allow_access_lua = true
 -- 是否自动 using "lua._G", 默认关闭
 conf.auto_using_G = false
 
-
 ---@alias namespace table 任意表都可以作为命名空间
 
 local _M

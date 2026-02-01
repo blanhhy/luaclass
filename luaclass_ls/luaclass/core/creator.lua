@@ -1,7 +1,6 @@
 ---@meta
 
 ---@alias MenberReceiver fun(tbl:table):luaclass
----@alias BasesReceiver  fun(base1:luaclass, base2?:luaclass, base3?:luaclass, ...:luaclass):MenberReceiver
 
 ---类创建器, 用于处理语法  
 ---一个完整的示例如下: 
@@ -22,5 +21,8 @@
 ---其中 ```(base1, base2, ...)``` 是可选的结构
 ---
 ---@param name? string
----@return MenberReceiver|BasesReceiver
-function class(name) end
+function class(name)
+    ---@overload fun(tbl:table):luaclass
+    ---@overload fun(...):MenberReceiver
+    return function(...) end
+end

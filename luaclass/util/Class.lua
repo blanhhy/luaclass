@@ -27,5 +27,4 @@ class "Class"(luaclass) {
     end;
 }
 
-
 return Class

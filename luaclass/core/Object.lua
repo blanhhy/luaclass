@@ -1,7 +1,7 @@
 local setmetatable = setmetatable
 local isinstance   = require("luaclass.inherit.isinstance")
 
----@class luaclass
+---@class lua.class.Object : luaclass
 local Object   = {
     __classname  = "Object";
     __ns_name    = "lua.class";

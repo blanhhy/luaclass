@@ -7,9 +7,6 @@ local randstr    = require "luaclass.share.randstr"
 
 ---类创建器，用于处理语法
 ---@param name? string
----@param bases nil
----@return MenberReceiver|BasesReceiver
----@overload fun(name:string, bases:luaclass[]):MenberReceiver
 local function class(name, bases)
     if not name or name == '' then -- 匿名类
         name = "lua.class.anonymous::Class_".. randstr(10)
@@ -18,10 +15,8 @@ local function class(name, bases)
     -- 先假设为 class "name" {} 语法
     -- 捕获成员表
     
-    ---@param tbl luaclass
-    ---@param ... luaclass
-    ---@return MenberReceiver
     ---@overload fun(tbl:table):luaclass
+    ---@overload fun(...):MenberReceiver
     return function(tbl, ...)
         tbl = tbl or {}
 

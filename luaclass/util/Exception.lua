@@ -48,6 +48,7 @@ class "Exception" {
     throw = _G.error;
 }
 
+---@extends lua._G.Exception
 class "TypeError"(Exception) {
     msg = "";
 

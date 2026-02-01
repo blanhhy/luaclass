@@ -3,11 +3,16 @@ if not class then
 end
 
 local isJIT = namespace.lua.jit and true or false
+local is5_5 = _VERSION == "Lua 5.5"
 local table_new, table_clear
 
 if isJIT then
     table_new = require "table.new"
     table_clear = require "table.clear"
+end
+
+if is5_5 then
+    table_new = table.create
 end
 
 local Int = math.floor
@@ -59,7 +64,7 @@ class "LuaArray" {
     end;
 
     -- 构造方法
-    -- 由于 jit 情况下有预分配空间的需求, 所以直接重写了 __new, 没有用 __init
+    -- 由于 jit 和 5.5 情况下有预分配空间的需求, 所以直接重写了 __new, 没有用 __init
     -- 可以从参数列表或已有的数组来创建数组, 也可以创建空数组
     ---@Override
     ---@Classmethod
@@ -73,7 +78,7 @@ class "LuaArray" {
         local array = nargs == 1 and type(...) == "table" and (...) or {...}
         local newArr
 
-        if isJIT then
+        if isJIT or is5_5 then
             newArr = table_new(#array, 2)
             newArr.__class = cls
             setmetatable(newArr, cls)

@@ -20,6 +20,7 @@ decl.typedef(Object, "Object")
 
 -- 创建 class 命名空间  
 -- 这将作为 Luaclass 模块的 “干净” 接口
+---@class lua.class
 local class_NS = namespace.new("lua.class")
 
 class_NS.class = class

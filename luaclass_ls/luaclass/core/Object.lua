@@ -15,7 +15,7 @@
 ---@field __init      fun(self:Object, ...:any)? 对象构造函数
 ---@field __new       fun(self:luaclass, ...:any):Object 类实例化方法
 ---@field new         fun(self:luaclass, ...:any):Object 类实例化方法
----@field defaultns   string?  默认命名空间
+---@field abstract    boolean? 是否为抽象类
 ---@field typedef     string?  可声明的类型名
 ---@field getClass    fun(self:Object):luaclass 获取对象的类
 ---@field isInstance  fun(self:Object, class:luaclass):boolean 判断对象是否为指定类的实例

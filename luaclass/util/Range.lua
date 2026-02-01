@@ -2,7 +2,7 @@ if not class then
     require "luaclass"
 end
 
-local Range_def = {
+local Range = class "lua.class.Range" {
     ---@Constructor
     __init = function (self, i, j, step)
         if i and not j and not step then
@@ -53,6 +53,6 @@ local Range_def = {
 }
 
 -- 确保能被 for 直接调用
-Range_def.__call = Range_def.next
+Range.__call = Range.next
 
-return luaclass("lua.class::Range", nil, Range_def)
+return Range
