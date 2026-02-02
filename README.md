@@ -1,6 +1,6 @@
 # Luaclass
 
-这是一个为 Lua 提供基于类的面向对象编程（Class-based OOP）支持的模块，旨在让 Lua 面向对象编程变得更加简单、优雅，同时功能强大。
+Luaclass 是一个纯 Lua 实现的面向对象编程（OOP）库，旨在为 Lua 提供完整的面向对象编程能力，支持 Lua 5.1+ 版本（包括 LuaJIT）
 
 ## 安装 & 导入
 
