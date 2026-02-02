@@ -52,7 +52,7 @@ return function (cls, bases)
         good_head = mros[i][#mros[i]]
         
         for j = 1, count do
-          if j ~= i and mros[j].tail[head] then
+          if j ~= i and mros[j].tail[good_head] then
             good_head = nil break
           end
         end
