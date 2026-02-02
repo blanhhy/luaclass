@@ -16,7 +16,7 @@ require "luaclass"
 
 - `luaclass`: 元类，相当于 Python `type`
 - `Object`: 所有类的基类
-- `class`: 定义类的关键词
+- `class`: 定义类的关键字
 - `super`: 调用已经被重写的基类方法
 - `decl`: 用于声明字段和抽象方法
 - `isinstance`: 判断对象是否为某个类实例
@@ -45,9 +45,21 @@ local obj = MyClass()
 obj:greet() --> Hello from MyClass
 ```
 
-详细介绍文档请移步 [doc.md](https://github.com/blanhhy/luaclass/blob/main/doc.md)
+上面的例子中出现了：
 
-更多示例代码请参见 [demo](https://github.com/blanhhy/luaclass/blob/main/demo)
+- 类的定义
+语法为 `class "<name>" {<body>}`，定义体是一个 Lua 表
+
+- 实例方法 
+特点在于第一个参数是实例本身，Lua 中习惯用 `self` 命名
+
+- luaclass 
+和 Python 的 `type` 几乎是一致的，可以用它获取对象的类型
+
+- 实例化
+有 Python 风格 `clazz()`，也有 Lua 风格 `clazz:new()`
+
+除了这些之外，Luaclass 还有许多内容，详细的介绍见 [使用文档](https://github.com/blanhhy/luaclass/blob/main/doc.md)，如果你想要可运行的代码示例，可以前往 [demo](https://github.com/blanhhy/luaclass/blob/main/demo) 获取
 
 ## 项目结构
 
