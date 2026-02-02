@@ -72,7 +72,7 @@ return function (cls, bases)
       local clsname = cls.__classname or "unknown"
       local mro_str = {clsname}
       for i = 2, #mro do mro_str[i] = tostring(mro[i]) end
-      return nil, err:format(clsname, concat(bad_heads, ", "), concat(mro_str, ", "))
+      return nil, errMsg:format(clsname, concat(bad_heads, ", "), concat(mro_str, ", "))
     end
 
     if not good_head then break end
