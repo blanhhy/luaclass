@@ -9,7 +9,7 @@
 ---@class luaclass: Object, metatable
 ---@field __classname string 类名
 ---@field __ns_name   string 命名空间名
----@field __mro       MRO    方法解析顺序
+---@field __mro       luaclass[] 方法解析顺序
 ---@field __tostring  fun(self:luaclass):string 类名字符串化
 ---@field __index     fun(self:luaclass, name:string):any 超类成员查找
 ---@field __init      fun(self:Object, ...:any)? 对象构造函数
