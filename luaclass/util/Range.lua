@@ -2,7 +2,7 @@ if not class then
     require "luaclass"
 end
 
-local Range = class "lua.class.Range" {
+local Range = class "lua.class::Range" {
     ---@Constructor
     __init = function (self, i, j, step)
         if i and not j and not step then

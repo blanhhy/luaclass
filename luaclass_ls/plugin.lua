@@ -73,12 +73,9 @@ function OnSetText(uri, text)
     end
 
     local diffs = {}
-    -- local processed = {} -- 记录已处理的位置，避免重复
 
     ---无继承情况 class "classname" {}
-    for start, classname, finish in text:gmatch '()class%s*"([%w%._]*)"%s*%b{}()' do
-        -- if processed[start] then goto continue end
-        -- processed[start] = true
+    for start, classname, finish in text:gmatch '()class%s*"([%w%.:_]*)"%s*%b{}()' do
         
         local ns_name, name = classname:match("^([^:]-):*([^:]+)$")
         local ns_path
@@ -92,20 +89,13 @@ function OnSetText(uri, text)
         else
             ns_path = "namespace."..ns_name
         end
-        
-        -- 查找继承注释
-        local extends = findExtendsComment(text, start)
-        local classAnnotation = "---@class "..ns_name.."."..name
-        if extends then
-            classAnnotation = classAnnotation.." : "..extends
-        else
-            classAnnotation = classAnnotation.." : luaclass"
-        end
 
         diffs[#diffs+1] = {
             start = start,
             finish = start - 1,
-            text = "(function()\n"..classAnnotation.."\n"..ns_path.."."..name.." = "
+            text = "(function()\n---@class "
+                .. ns_name.."."..name..":luaclass\n"
+                .. ns_path.."."..name.." = "
         }
 
         diffs[#diffs+1] = {
@@ -113,14 +103,10 @@ function OnSetText(uri, text)
             finish = finish - 1,
             text = "\nreturn "..ns_path.."."..name.." end)()"
         }
-        
-        -- ::continue::
     end
 
     ---有继承情况 class "classname" (...) {}
-    for start, classname, finish in text:gmatch '()class%s*"([%w%._]*)"%s*%b()%s*%b{}()' do
-        -- if processed[start] then goto continue end
-        -- processed[start] = true
+    for start, classname, finish in text:gmatch '()class%s*"([%w%.:_]*)"%s*%b()%s*%b{}()' do
         
         local ns_name, name = classname:match("^([^:]-):*([^:]+)$")
         local ns_path
@@ -136,18 +122,15 @@ function OnSetText(uri, text)
         end
         
         -- 查找继承注释
-        local extends = findExtendsComment(text, start)
-        local classAnnotation = "---@class "..ns_name.."."..name
-        if extends then
-            classAnnotation = classAnnotation.." : "..extends
-        else
-            classAnnotation = classAnnotation.." : luaclass"
-        end
+        local bases = findExtendsComment(text, start)
+        local extends = (":%s\n"):format(bases or "luaclass")
 
         diffs[#diffs+1] = {
             start = start,
             finish = start - 1,
-            text = "(function()\n"..classAnnotation.."\n"..ns_path.."."..name.." = "
+            text = "(function()\n---@class "
+                .. ns_name.."."..name..extends
+                .. ns_path.."."..name.." = "
         }
 
         diffs[#diffs+1] = {
@@ -155,8 +138,6 @@ function OnSetText(uri, text)
             finish = finish - 1,
             text = "\nreturn "..ns_path.."."..name.." end)()"
         }
-        
-        -- ::continue::
     end
 
     return #diffs > 0 and diffs or nil

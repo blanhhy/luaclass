@@ -7,7 +7,7 @@ namespace = {}
 ---@class lua
 namespace.lua           = {}
 
-namespace.lua._G        = _G ---@class _G
+namespace.lua._G        = _G ---@class lua._G : _G
 namespace.lua.string    = string or require "string" or nil
 namespace.lua.table     = table  or require "table"  or nil
 namespace.lua.math      = math   or require "math"   or nil
@@ -21,6 +21,7 @@ namespace.lua.jit       = jit    or require "jit"    or nil
 namespace.lua.coroutine = coroutine or require "coroutine" or nil
 namespace.lua.package   = package   or require "package"   or nil
 
+namespace.lua.class     = require "luaclass.main" ---@class lua.class
 
 ---@param name string
 ---@param ns?  namespace
