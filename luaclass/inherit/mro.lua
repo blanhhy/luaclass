@@ -30,7 +30,8 @@ return function (cls, bases)
   local count = #bases
   local err = false
 
-  for i = 1, count do
+  -- 先添加所有基类的MRO
+  for i = 1, #bases do
     local base = bases[i]
     local base_mro = base.__mro
     local mro_len = #base_mro
@@ -43,6 +44,15 @@ return function (cls, bases)
     end
   end
 
+  -- 再添加直接基类列表本身
+  local direct = {tail = {}}
+  for i = 1, #bases do
+    direct[i] = bases[count-i+1]
+    direct.tail[bases[i]] = i ~= 1
+  end
+  count = count + 1
+  mros[count] = direct
+
   while true do -- 反复选择好表头加入 MRO
     local good_head = nil
     local unfinished = false
@@ -51,12 +61,12 @@ return function (cls, bases)
       if #mros[i] > 0 then
         unfinished = true
         good_head = mros[i][#mros[i]] -- 选一个表头
-        
+
         for j = 1, count do -- 验证好表头
-          if j ~= i and mros[j].tail[good_head] then
-            good_head = nil break
-          end
+        if mros[j].tail[good_head] then
+          good_head = nil break
         end
+      end
 
         if good_head then break end
       end
@@ -68,23 +78,26 @@ return function (cls, bases)
     end
 
     for i = 1, count do
-      local mro = mros[i]
-      if mro[#mro] == good_head then
-        mro[#mro] = nil -- 弹出表头
-        mro.tail[mro[#mro] or 0] = nil -- 新表头不再是尾部
+      local curr = mros[i]
+      if curr[#curr] == good_head then
+        curr[#curr] = nil -- 弹出表头
+        curr.tail[curr[#curr] or 0] = nil -- 新表头不再是尾部
       end
-    end
-    
+  end
+
     mro[#mro + 1] = good_head
   end
 
   if err then -- 构造错误信息
     local errMsg = "Cannot create class '%s' due to MRO conflict. (in bases: %s)\n"
                 .. "Current merged MRO: [%s]"
-    local bad_heads = {}
+    local bad_heads = {} -- 收集所有冲突表头
     for i = 1, count do
       local head = mros[i][#mros[i]]
-      if head then bad_heads[#bad_heads+1] = tostring(head) end
+      if head and not bad_heads[head] then
+        bad_heads[#bad_heads+1] = tostring(head)
+        bad_heads[head] = true
+      end
     end
     local clsname = cls.__classname or "unknown"
     local mro_str = {clsname}
