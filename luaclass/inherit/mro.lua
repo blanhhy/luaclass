@@ -63,9 +63,9 @@ return function (cls, bases)
         good_head = mros[i][#mros[i]] -- 选一个表头
 
         for j = 1, count do -- 验证好表头
-        if mros[j].tail[good_head] then
-          good_head = nil break
-        end
+          if i ~= j and mros[j].tail[good_head] then
+            good_head = nil break
+          end
       end
 
         if good_head then break end
@@ -83,7 +83,7 @@ return function (cls, bases)
         curr[#curr] = nil -- 弹出表头
         curr.tail[curr[#curr] or 0] = nil -- 新表头不再是尾部
       end
-  end
+    end
 
     mro[#mro + 1] = good_head
   end
