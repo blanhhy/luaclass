@@ -12,7 +12,7 @@ print(luaclass(str))  -- String
 print(type(str))      -- string
 
 print(str:isInstance(String))    -- true
-print(str:isInstance(Object))    -- true
+print(str:isInstance(object))    -- true
 print(isinstance(str, "string")) -- true
 
 print(String{1, 2, 3}) -- {1, 2, 3}
