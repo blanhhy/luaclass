@@ -1,7 +1,7 @@
 local rawget = rawget
 
 ---依照MRO查找超类成员
----@param self Object 任意对象
+---@param self object 任意对象
 ---@param name string 成员名
 ---@param wait_target? luaclass 是否等待目标类
 ---@return any

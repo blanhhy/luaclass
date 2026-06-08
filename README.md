@@ -15,7 +15,7 @@ require "luaclass"
 模块包含以下接口：
 
 - `luaclass`: 元类，相当于 Python `type`
-- `Object`: 所有类的基类
+- `object`: 所有类的基类
 - `class`: 定义类的关键字
 - `super`: 调用已经被重写的基类方法
 - `decl`: 用于声明字段和抽象方法
@@ -70,7 +70,7 @@ luaclass/
 │   ├── creator.lua
 │   ├── luaclass.lua
 │   ├── namespace.lua
-│   └── Object.lua
+│   └── object.lua
 ├── inherit/
 │   ├── index.lua
 │   ├── isinstance.lua

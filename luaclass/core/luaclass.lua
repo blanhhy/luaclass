@@ -10,11 +10,11 @@ local isinstance = require("luaclass.inherit.isinstance")
 local mergeMROs  = require("luaclass.inherit.mro")
 local namespace  = require("luaclass.core.namespace")
 local checktool  = require("luaclass.core.checktool")
-local Object     = require("luaclass.core.Object")
+local object     = require("luaclass.core.object")
 local randstr    = require("luaclass.share.randstr")
 local typedef    = require("luaclass.share.declare").typedef
 
----@class lua.class.luaclass : lua.class.Object
+---@class lua.class.luaclass : lua.class.object
 local luaclass = {
     __classname  = "luaclass";
     __ns_name    = "lua.class";
@@ -24,7 +24,7 @@ local luaclass = {
 }
 
 luaclass.__class = luaclass
-luaclass.__mro   = {luaclass, Object}
+luaclass.__mro   = {luaclass, object}
 
 ---@static
 ---@param ... any 成对的 “值, 类型” 参数列表
@@ -87,7 +87,7 @@ function luaclass:__new(name, bases, tbl)
     end
     
     if not bases or not bases[1] then
-        bases = {Object} -- 默认继承 Object
+        bases = {object} -- 默认继承 object
     end
 
     -- 获取在名字中指定的命名空间
@@ -105,7 +105,7 @@ function luaclass:__new(name, bases, tbl)
         __classname = name;
         __ns_name   = ns_name;
         __class     = self;
-        __new       = Object.__new;
+        __new       = object.__new;
     }
 
     cls.__index = cls
@@ -166,7 +166,7 @@ end
 ---这个方法是元类默认的 __call 方法  
 ---当类被调用时, 实际上是调用这个方法来创建实例
 ---@param ... any      传递给构造函数的参数
----@return Object obj  该类的一个实例
+---@return object obj  该类的一个实例
 ---@overload fun(_: luaclass, val: any):type_class
 function luaclass:__call(...)
     if self == luaclass and select('#', ...) == 1 then

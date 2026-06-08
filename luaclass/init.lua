@@ -7,6 +7,6 @@ G.decl  = M.decl
 G.namespace  = M.namespace
 G.isinstance = M.isinstance
 G.luaclass   = M.luaclass
-G.Object     = M.Object
+G.object     = M.object
 
 return M

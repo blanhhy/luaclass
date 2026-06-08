@@ -6,4 +6,4 @@ require "luaclass.util.String"
 require "luaclass.util.LuaArray"
 require "luaclass.util.Exception"
 
-range = require "luaclass.util.Range"
+require "luaclass.util.range"

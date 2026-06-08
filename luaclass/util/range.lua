@@ -2,7 +2,7 @@ if not class then
     require "luaclass"
 end
 
-local Range = class "lua.class::Range" {
+class "range" {
     ---@Constructor
     __init = function (self, i, j, step)
         if i and not j and not step then
@@ -27,7 +27,7 @@ local Range = class "lua.class::Range" {
 
     ---@Override
     __tostring = function (self)
-        return string.format("Range(%d, %d, %d)", self.START, self.STOP, self.STEP)
+        return string.format("range(%d, %d, %d)", self.START, self.STOP, self.STEP)
     end;
 
     __len = function (self)
@@ -53,6 +53,6 @@ local Range = class "lua.class::Range" {
 }
 
 -- 确保能被 for 直接调用
-Range.__call = Range.next
+range.__call = range.next
 
-return Range
+return range

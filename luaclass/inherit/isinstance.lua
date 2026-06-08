@@ -22,7 +22,7 @@ local function isinstance(obj, cls)
 
   local mro = obj_cls.__mro -- 认为子类实例也是基类类型
 
-  -- 预先判断是否为当前类或 Object 类
+  -- 预先判断是否为当前类或 object 类
   if cls == mro[1] or cls == mro[mro.n] then
     return true
   end

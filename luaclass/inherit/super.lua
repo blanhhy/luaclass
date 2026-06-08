@@ -4,7 +4,7 @@ local weaken = require "luaclass.share.weaktbl"
 local type, setmetatable, error
     = type, setmetatable, error
 
-local Super = weaken({
+local superMT = weaken({
   __index = function(proxy, k)
     local field = index(proxy.self, k, proxy.__class)
 
@@ -34,9 +34,9 @@ local getlocal = debug and debug.getlocal
 
 -- 以某个对象的身份访问它超类上的成员  
 -- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self
----@param obj? Object
+---@param obj? object
 ---@param cls? luaclass
----@return Super
+---@return super
 local function super(obj, cls)
   if not obj then
     local _, self
@@ -46,13 +46,13 @@ local function super(obj, cls)
 
   cls = cls or obj.__mro[2]
 
-  Super[obj] = Super[obj] or weaken({}, 'k')
-  Super[obj][cls] = Super[obj][cls] or setmetatable({
+  superMT[obj] = superMT[obj] or weaken({}, 'k')
+  superMT[obj][cls] = superMT[obj][cls] or setmetatable({
     self     = obj;
     __class  = cls;
-  }, Super)
+  }, superMT)
 
-  return Super[obj][cls]
+  return superMT[obj][cls]
 end
 
 return super

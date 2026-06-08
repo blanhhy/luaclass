@@ -9,7 +9,7 @@ if not String then return nil end
 local _M = require("luaclass.main")
 
 local luaclass = _M.luaclass
-local Object   = _M.Object
+local object   = _M.object
 local tostring = _G.tostring
 
 local stringlib = _G.string or require("string") ---@class stringlib
@@ -25,7 +25,7 @@ String.__classname = "String"
 String.__ns_name   = "lua._G"
 String.typedef     = "string"
 String.__class     = luaclass
-String.__mro       = {String, Object}
+String.__mro       = {String, object}
 String.valueOf     = tostring
 
 ---@Override
@@ -44,7 +44,7 @@ for k, v in next, stringlib do String[k] = v end
 -- 必要的实例字段和方法
 stringlib.__class    = String
 stringlib.isInstance = _M.isinstance
-stringlib.getClass   = Object.getClass
+stringlib.getClass   = object.getClass
 
 setmetatable(String, luaclass)
 rawset(_G, "String", String)
