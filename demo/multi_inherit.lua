@@ -24,7 +24,6 @@ class "D"(B, C) {
   foo = function() print("D foo") end;
 }
 
-
 local d = D()
 d:foo() -- 输出 "D foo"
 print(LuaArray(D.__mro)) -- 输出 {D, B, C, A, Object}

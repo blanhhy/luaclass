@@ -1,7 +1,7 @@
 local isinstance = require "luaclass.inherit.isinstance"
 local namespace  = require "luaclass.core.namespace"
 local luaclass   = require "luaclass.core.luaclass"
-local object     = require "luaclass.core.object"
+local object     = require "luaclass.core.object" ---@class class
 local class      = require "luaclass.core.creator"
 local super      = require "luaclass.inherit.super"
 local decl       = require "luaclass.share.declare"
@@ -18,8 +18,6 @@ setmetatable(object, luaclass)
 decl.typedef(luaclass, "luaclass")
 decl.typedef(object, "object")
 
--- 创建 class 命名空间  
--- 这将作为 Luaclass 模块的 “干净” 接口
 ---@class lua.class
 local class_NS = namespace.new("lua.class")
 
@@ -36,7 +34,7 @@ class_NS.object     = object
 namespace.new("lua.class.anonymous", weak({}, 'kv'))
 
 -- 这是一个兼容的实例化风格
--- 可以用 Clazz:new(...), 相当于 Clazz(...)
+-- 可以用 clazz:new(), 相当于 clazz()
 object.new = luaclass.__call
 
 return class_NS

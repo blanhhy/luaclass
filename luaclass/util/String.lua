@@ -2,7 +2,7 @@
 -- 这个类需要单独导入, require "luaclass" 的时候并不会包含luaclass.util.*
 
 local _G = _G
-local String = getmetatable('') ---@class String : luaclass, string
+local String = getmetatable('') ---@class String : class, string
 
 if not String then return nil end
 

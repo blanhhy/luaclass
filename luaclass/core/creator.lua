@@ -15,7 +15,7 @@ local function class(name, bases)
     -- 先假设为 class "name" {} 语法
     -- 捕获成员表
     
-    ---@overload fun(tbl:table):luaclass
+    ---@overload fun(tbl:table):class
     ---@overload fun(...):MenberReceiver
     return function(tbl, ...)
         tbl = tbl or {}
@@ -41,7 +41,6 @@ local function class(name, bases)
             tbl.__abstract_methods = checktool.getAbstractMethods(tbl, bases)
         end
 
-        ---@type luaclass
         return mcls(name, bases, tbl)
     end
 end

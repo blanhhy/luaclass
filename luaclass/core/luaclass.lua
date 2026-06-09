@@ -14,7 +14,6 @@ local object     = require("luaclass.core.object")
 local randstr    = require("luaclass.share.randstr")
 local typedef    = require("luaclass.share.declare").typedef
 
----@class lua.class.luaclass : lua.class.object
 local luaclass = {
     __classname  = "luaclass";
     __ns_name    = "lua.class";
@@ -26,10 +25,6 @@ local luaclass = {
 luaclass.__class = luaclass
 luaclass.__mro   = {luaclass, object}
 
----@static
----@param ... any 成对的 “值, 类型” 参数列表
----@return type_mismatch?
----@overload fun(v1:any, T1?:type_check, v2?:any, T2?:type_check, v3?:any, T3?:type_check, ...:any): type_mismatch?
 function luaclass.match(...)
     local n = select('#', ...)
     if n == 0 then return end
@@ -59,7 +54,6 @@ function luaclass.match(...)
     end
 end
 
-
 -- Lua 元方法名
 local mm_names = {
     "__add", "__sub", "__mul", "__div", "__idiv", "__mod", "__pow",
@@ -68,16 +62,6 @@ local mm_names = {
     "__tostring"
 }
 
----创建类对象
----@classmethod
----@param name?  string
----@param bases? luaclass[]
----@param tbl?   table
----@return luaclass
----@overload fun(self: luaclass, name: string, bases: luaclass[], tbl: table): luaclass
----@overload fun(self: luaclass, name: string, bases: luaclass[]): luaclass
----@overload fun(self: luaclass, name: string): luaclass
----@overload fun(self: luaclass): luaclass
 function luaclass:__new(name, bases, tbl)
     local ns_name
 
@@ -135,15 +119,15 @@ function luaclass:__new(name, bases, tbl)
     local mro, err = mergeMROs(cls, bases)
     if err then error(err, 3) end
 
-    cls.__mro = mro
+    cls.__mro = mro ---@type MRO
     setmetatable(cls, self) -- 元类是类的元表
 
     cls.abstract = nil -- 这会让下面的 cls.abstract 访问到基类的 abstract 属性
 
     -- 子类未声明抽象但基类抽象, 需要检查抽象方法实现没有
     if not as_abc and cls.abstract then
-        local ok, err = checktool.isImplemented(cls, bases)
-        if not ok then error(err, 3) end
+        local ok, er = checktool.isImplemented(cls, bases)
+        if not ok then error(er, 3) end
         cls.abstract = false -- 必须设置成 false 而不是 nil, 要阻断对子类的影响
     end
 
@@ -162,35 +146,29 @@ function luaclass:__new(name, bases, tbl)
     return cls
 end
 
-
----这个方法是元类默认的 __call 方法  
----当类被调用时, 实际上是调用这个方法来创建实例
----@param ... any      传递给构造函数的参数
----@return object obj  该类的一个实例
----@overload fun(_: luaclass, val: any):type_class
-function luaclass:__call(...)
-    if self == luaclass and select('#', ...) == 1 then
+function luaclass.__call(mcls, ...)
+    if mcls == luaclass and select('#', ...) == 1 then
         local obj, typ = (...), type(...)
         return (typ == "table" or typ == "string") 
         and obj.__class
         or  typ
     end
 
-    if self ~= luaclass and rawget(self, "abstract") then
+    if mcls ~= luaclass and rawget(mcls, "abstract") then
         error((
         "Cannot instantiate abstract class '%s'"
-        ):format(self), 2)
+        ):format(mcls), 2)
     end
 
-    local inst = self:__new(...)
-    local init = self.__init
+    local inst = mcls:__new(...)
+    local init = mcls.__init
 
     if init and type(init) == "function" then
         init(inst, ...)
     end
 
-    if self.declare then
-        local ok, err = checktool.isInitialized(self, inst)
+    if mcls.declare then
+        local ok, err = checktool.isInitialized(mcls, inst)
         if not ok then error(err, 2) end
     end
 

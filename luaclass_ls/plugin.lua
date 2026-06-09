@@ -1,12 +1,3 @@
-local outdated  = _VERSION == "Lua 5.1"
-local global    = outdated and "_G" or "_ENV"
-local defaultns = "lua._G" -- 默认命名空间, 按需修改
-
----@class diff
----@field start  integer # The number of bytes at the beginning of the replacement
----@field finish integer # The number of bytes at the end of the replacement
----@field text   string  # What to replace
-
 ---从指定位置向前查找上一行注释
 local function findExtendsComment(text, pos)
     if pos <= 1 then return nil end
@@ -60,85 +51,117 @@ local function findExtendsComment(text, pos)
     return nil
 end
 
+---@class diff
+---@field start  integer # The number of bytes at the beginning of the replacement
+---@field finish integer # The number of bytes at the end of the replacement
+---@field text   string  # What to replace
+
 ---@param  uri  string # The uri of file
 ---@param  text string # The content of file
 ---@return diff[]?
 function OnSetText(uri, text)
-    
-    if  not text:find 'require%s*"luaclass"' and
-        not text:find "require%s*'luaclass'" and
-        not text:find 'require%s*("luaclass")' and
-        not text:find "require%s*('luaclass')" then
+    if  not text:find 'require.?luaclass' and
+        not text:find "@modele.?luaclass" then
         return nil
     end
 
     local diffs = {}
 
-    ---无继承情况 class "classname" {}
-    for start, classname, finish in text:gmatch '()class%s*"([%w%.:_]*)"%s*%b{}()' do
-        
+    for start, classname, body, finish in text:gmatch '()class%s*(%b"")%s*(%b{})()' do
+        classname = classname:sub(2, -2) -- 去掉引号
         local ns_name, name = classname:match("^([^:]-):*([^:]+)$")
         local ns_path
 
         if not ns_name or ns_name == '' then
-            ns_name = defaultns
-            ns_path = global
+            ns_name = "lua._G"
+            ns_path = ""
         elseif ns_name:sub(1, 1) == '.' then
-            ns_name = defaultns..ns_name -- 相对路径
-            ns_path = global..ns_name
+            ns_name = "lua._G"..ns_name -- 相对路径
+            ns_path = ns_name.."."
         else
-            ns_path = "namespace."..ns_name
+            ns_path = "namespace."..ns_name.."."
         end
+
+        local typename = ns_name.."."..name
 
         diffs[#diffs+1] = {
             start = start,
             finish = start - 1,
-            text = "(function()\n---@class "
-                .. ns_name.."."..name..":luaclass\n"
-                .. ns_path.."."..name.." = "
+            text = ([[(function()
+local raw = %s
+---@class %s:lua._G.object
+local cls = %s
+cls.__classname = "%s"
+cls.__ns_name = "%s"
+cls.__class = raw.metaclass or luaclass
+cls.typedef = raw.typedef or nil
+%s%s = cls
+            ]]):format(
+                body,
+                typename,
+                body,
+                name,
+                ns_name,
+                ns_path,
+                name
+            )
         }
 
         diffs[#diffs+1] = {
             start = finish,
             finish = finish - 1,
-            text = "\nreturn "..ns_path.."."..name.." end)()"
+            text = "\nreturn cls end)()"
         }
     end
 
-    ---有继承情况 class "classname" (...) {}
-    for start, classname, finish in text:gmatch '()class%s*"([%w%.:_]*)"%s*%b()%s*%b{}()' do
-        
+    for start, classname, body, finish in text:gmatch '()class%s*(%b"")%s*%b()%s*(%b{})()' do
+        classname = classname:sub(2, -2) -- 去掉引号
         local ns_name, name = classname:match("^([^:]-):*([^:]+)$")
         local ns_path
 
         if not ns_name or ns_name == '' then
-            ns_name = defaultns
-            ns_path = global
+            ns_name = "lua._G"
+            ns_path = ""
         elseif ns_name:sub(1, 1) == '.' then
-            ns_name = defaultns..ns_name -- 相对路径
-            ns_path = global..ns_name
+            ns_name = "lua._G"..ns_name -- 相对路径
+            ns_path = ns_name.."."
         else
-            ns_path = "namespace."..ns_name
+            ns_path = "namespace."..ns_name.."."
         end
-        
-        -- 查找继承注释
-        local bases = findExtendsComment(text, start)
-        local extends = (":%s\n"):format(bases or "luaclass")
+
+        local typename = ns_name.."."..name
+        local bases = findExtendsComment(text, start) or "lua._G.object"
 
         diffs[#diffs+1] = {
             start = start,
             finish = start - 1,
-            text = "(function()\n---@class "
-                .. ns_name.."."..name..extends
-                .. ns_path.."."..name.." = "
+            text = ([[(function()
+local raw = %s
+---@class %s:%s
+local cls = %s
+cls.__classname = "%s"
+cls.__ns_name = "%s"
+cls.__class = raw.metaclass or luaclass
+cls.typedef = raw.typedef or nil
+%s%s = cls
+            ]]):format(
+                body,
+                typename,
+                bases,
+                body,
+                name,
+                ns_name,
+                ns_path,
+                name
+            )
         }
 
         diffs[#diffs+1] = {
             start = finish,
             finish = finish - 1,
-            text = "\nreturn "..ns_path.."."..name.." end)()"
+            text = "\nreturn cls end)()"
         }
     end
 
-    return #diffs > 0 and diffs or nil
+    return diffs
 end

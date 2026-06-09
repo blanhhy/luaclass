@@ -3,11 +3,9 @@
 
 local tostring, concat = tostring, table.concat
 
----@alias MRO luaclass[]
-
 ---合并基类的 MRO (C3线性化算法)
----@param cls   luaclass
----@param bases luaclass[]
+---@param cls   class
+---@param bases class[]
 ---@return MRO?, string? errMsg
 return function (cls, bases)
   local mro = {cls} -- 先加入自身

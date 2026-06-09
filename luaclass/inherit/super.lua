@@ -35,7 +35,7 @@ local getlocal = debug and debug.getlocal
 -- 以某个对象的身份访问它超类上的成员  
 -- debug 库可用时, 可以直接 super():foo(), 会自动获取当前方法的 self
 ---@param obj? object
----@param cls? luaclass
+---@param cls? class
 ---@return super
 local function super(obj, cls)
   if not obj then
