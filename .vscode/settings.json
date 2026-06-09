@@ -7,5 +7,5 @@
         "weaken": "setmetatable",
         "import": "require"
     },
-    "Lua.runtime.plugin": "luaclass_ls/plugin.lua"
+    "Lua.runtime.plugin": ".vscode/luaclass.plugin.lua"
 }

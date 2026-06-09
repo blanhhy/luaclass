@@ -51,6 +51,23 @@ local function findExtendsComment(text, pos)
     return nil
 end
 
+
+-- 当前行是否为注释
+local function isComment(text, pos)
+    local last = false
+    for i = pos-1, 1, -1 do
+        local char = text:sub(i, i)
+        if char == '\n' then
+            return false
+        elseif last and char == '-' then
+            return true
+        end
+        last = char == '-'
+    end
+    return false
+end
+
+
 ---@class diff
 ---@field start  integer # The number of bytes at the beginning of the replacement
 ---@field finish integer # The number of bytes at the end of the replacement
@@ -60,14 +77,16 @@ end
 ---@param  text string # The content of file
 ---@return diff[]?
 function OnSetText(uri, text)
-    if  not text:find 'require.?luaclass' and
-        not text:find "@modele.?luaclass" then
+    if  not text:find 'require.*luaclass' and
+        not text:find "@module.*luaclass" then
         return nil
     end
 
     local diffs = {}
 
     for start, classname, body, finish in text:gmatch '()class%s*(%b"")%s*(%b{})()' do
+        if not isComment(text, start) then
+
         classname = classname:sub(2, -2) -- 去掉引号
         local ns_name, name = classname:match("^([^:]-):*([^:]+)$")
         local ns_path
@@ -112,9 +131,11 @@ cls.typedef = raw.typedef or nil
             finish = finish - 1,
             text = "\nreturn cls end)()"
         }
-    end
+    end end
 
     for start, classname, body, finish in text:gmatch '()class%s*(%b"")%s*%b()%s*(%b{})()' do
+        if not isComment(text, start) then
+        
         classname = classname:sub(2, -2) -- 去掉引号
         local ns_name, name = classname:match("^([^:]-):*([^:]+)$")
         local ns_path
@@ -161,7 +182,7 @@ cls.typedef = raw.typedef or nil
             finish = finish - 1,
             text = "\nreturn cls end)()"
         }
-    end
+    end end
 
     return diffs
 end
