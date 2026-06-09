@@ -84,7 +84,7 @@ luaclass/
 │   ├── Class.lua
 │   ├── Exception.lua
 │   ├── LuaArray.lua
-│   ├── Range.lua
+│   ├── range.lua
 │   ├── String.lua
 │   └── init.lua
 ├── main.lua
