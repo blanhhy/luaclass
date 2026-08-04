@@ -1,3 +1,6 @@
+> **推广**  
+> [SimpleClass](https://github.com/blanhhy/LuaSimpleClass) 已经可用，比 Luaclass 更简单，更轻量，更 IDE 友好
+
 # Luaclass
 
 Luaclass 是一个纯 Lua 实现的面向对象编程（OOP）库，旨在为 Lua 提供完整的面向对象编程能力，支持 Lua 5.1+ 版本（包括 LuaJIT）
